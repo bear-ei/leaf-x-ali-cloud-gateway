@@ -1,0 +1,27 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "noImplicitThis": true,
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "incremental": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "module": "CommonJS",
+    "newLine": "lf",
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "outDir": "dist",
+    "pretty": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "stripInternal": true,
+    "target": "ES2015",
+    "baseUrl": ".",
+    "typeRoots": ["node_modules/@types", "./types"]
+  },
+  "exclude": ["dist", "node_modules"]
+}

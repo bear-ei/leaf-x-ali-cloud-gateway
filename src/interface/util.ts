@@ -1,132 +1,44 @@
-'use strict'
+import * as crypto from 'crypto'
+;('use strict')
 
 /**
- * Md5 encoding.
+ * Get request header options.
  */
-export interface Md5 {
-  (data: string): string
-}
-
-/**
- * HmacSHA256 encoding.
- */
-export interface HmacSHA256 {
-  (secret: string, data: string): string
-}
-
-/**
- * Formatting headers.
- */
-export interface FormatHeaders {
-  (headers: Record<string, string>): Record<string, string>
-}
-
-/**
- * Header Options.
- */
-export interface HeadersOptions {
+export interface GetRequestHeaderOptions {
   /**
-   * Application key.
+   * Ali cloud gateway application Key.
    */
   appKey: string
+  /**
+   * Gateway environment.
+   */
+  stage: string
 
   /**
-   * Gateway Environment.
-   *
-   * RELEASE    Production environment.
-   * TEST       Test environment.
-   * PRE        Pre-release environment.
+   * Request unique string identification.
    */
-  stage: 'RELEASE' | 'TEST' | 'PRE'
+  nonce: string
 
   /**
-   * Whether to turn on anti-replay.
+   * Request entity.
    */
-  nonce: boolean
-
-  /**
-   * Request Data.
-   */
-  data: unknown
+  body: unknown
 }
 
-/**
- * Headers.
- */
-export interface Headers {
-  (options: HeadersOptions, headers: Record<string, string>): Record<
+export interface GetRequestHeaderFunction {
+  (options: GetRequestHeaderOptions, headers: Record<string, string>): Record<
     string,
     string
   >
 }
 
 /**
- * Url params result.
+ * md5.
  */
-export interface UrlParamsResult {
-  href: string
-  params: URLSearchParams
+export interface MD5Function {
+  (options: crypto.BinaryLike): string
 }
 
-/**
- * Url params.
- */
-export interface UrlParams {
-  (httpUrl: string): UrlParamsResult
-}
-
-/**
- *  Params signature string.
- */
-export interface ParamsSignString {
-  (params: Record<string, unknown>, options: UrlParamsResult): string
-}
-
-/**
- * Signature Options.
- */
-export interface SignOptions {
-  /**
-   * Http method.
-   */
-  method: string
-
-  /**
-   * headers.
-   */
-  headers: Record<string, string>
-
-  /**
-   * Params signature string.
-   */
-  paramsSignString: string
-}
-
-/**
- * Signature result.
- */
-export interface SignResult {
-  /**
-   * Gateway signature.
-   */
-  'x-ca-signature': string
-
-  /**
-   * Request headers involved in the calculation of signatures.
-   */
-  'x-ca-signature-headers': string
-}
-
-/**
- * Signature.
- */
-export interface Sign {
-  (secret: string, options: SignOptions): SignResult
-}
-
-/**
- * Check if it is the correct url.
- */
-export interface IsUrl {
-  (url: string): URL | boolean
+export interface IsUrlFunction {
+  (url: string): boolean
 }

@@ -3,16 +3,16 @@
 import { AxiosRequestConfig, AxiosResponse } from 'axios'
 
 /**
- * Gateway options.
+ * Gateway Options.
  */
 export interface GatewayOptions {
   /**
-   * Application key.
+   * Ali cloud gateway application Key.
    */
   appKey: string
 
   /**
-   * Application secret.
+   * Ali cloud gateway application secret.
    */
   appSecret: string
 
@@ -26,12 +26,12 @@ export interface GatewayOptions {
   stage?: 'RELEASE' | 'TEST' | 'PRE'
 
   /**
-   * Whether to turn on anti-replay.
+   * Whether to enable anti-playback, default true.
    */
   nonce?: boolean
 
   /**
-   * Default request header.
+   * Default request headers.
    */
   defaultHeaders?: Record<string, unknown>
 
@@ -44,7 +44,7 @@ export interface GatewayOptions {
 /**
  * Gateway result.
  */
-export interface GatewayResult {
+export interface GatewayFunctionResult {
   /**
    * request.
    *
@@ -56,8 +56,8 @@ export interface GatewayResult {
 /**
  * Gateway.
  */
-export interface Gateway {
-  (options: GatewayOptions): GatewayResult
+export interface GatewayFunction {
+  (options: GatewayOptions): GatewayFunctionResult
 }
 
 /**
@@ -65,8 +65,8 @@ export interface Gateway {
  *
  * Axios-based implementation.
  */
-export interface Request {
-  (gatewayOptions: GatewayOptions, options: AxiosRequestConfig): Promise<
-    AxiosResponse<unknown>
-  >
+export interface RequestFunction {
+  (configs: GatewayOptions): (
+    options: AxiosRequestConfig
+  ) => Promise<AxiosResponse<unknown>>
 }

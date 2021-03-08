@@ -7,7 +7,7 @@ import { AxiosRequestConfig, AxiosResponse } from 'axios'
  */
 export interface GatewayOptions {
   /**
-   * Ali cloud gateway application Key.
+   * Ali cloud gateway application key.
    */
   appKey: string
 
@@ -15,6 +15,11 @@ export interface GatewayOptions {
    * Ali cloud gateway application secret.
    */
   appSecret: string
+
+  /**
+   * Request timeout time in milliseconds, default value 3000.
+   */
+  timeout?: number
 
   /**
    * Gateway Environment.
@@ -36,9 +41,14 @@ export interface GatewayOptions {
   defaultHeaders?: Record<string, unknown>
 
   /**
-   * The base url is automatically prepended to the url, unless the url is an absolute url.
+   * Base url.
    */
   baseUrl?: string
+
+  /**
+   * Request url.
+   */
+  url?: string
 }
 
 /**
@@ -50,7 +60,10 @@ export interface GatewayFunctionResult {
    *
    * Axios-based implementation.
    */
-  request: Request
+  request: (
+    path: string,
+    options: AxiosRequestConfig
+  ) => Promise<AxiosResponse<unknown>>
 }
 
 /**
@@ -63,10 +76,11 @@ export interface GatewayFunction {
 /**
  * request.
  *
- * Axios-based implementation.
+ * @param path Request path.
  */
 export interface RequestFunction {
   (configs: GatewayOptions): (
+    path: string,
     options: AxiosRequestConfig
   ) => Promise<AxiosResponse<unknown>>
 }

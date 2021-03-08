@@ -1,11 +1,22 @@
+'use strict'
+
 import * as crypto from 'crypto'
 import * as uuid from 'uuid'
-import { GetRequestHeaderFunction, MD5Function } from './interface/util'
+import {
+  GetCanonicalHeaderFunction,
+  GetHeaderFunction,
+  GetSignFunction,
+  GetTokenFunction,
+  MD5Function
+} from './interface/util'
 
-export const getHeaders: GetRequestHeaderFunction = (
-  { appKey, stage, nonce, body },
+export const getHeaders: GetHeaderFunction = ({
+  appKey,
+  stage,
+  nonce,
+  body,
   headers
-) => {
+}) => {
   const type = 'application/json; charset=UTF-8'
   const contentType = headers['content-type'] ?? type
   const data = contentType.startsWith('application/json')
@@ -16,7 +27,7 @@ export const getHeaders: GetRequestHeaderFunction = (
     'x-ca-timestamp': Date.now().toString(),
     'x-ca-key': appKey,
     'x-ca-stage': stage,
-    'content-type': headers['content-type'] ?? type,
+    'content-type': contentType,
     'content-md5': data ? md5(data as crypto.BinaryLike).toString() : '',
     date: new Date().toUTCString(),
     accept: headers['accept'] ?? type,
@@ -25,30 +36,40 @@ export const getHeaders: GetRequestHeaderFunction = (
   }
 }
 
-export const getToken = ({ method, headers, url, appSecret }) => {
-  const { canonicalHeaderKeys, canonicalHeaderStr } = getCanonicalHeaders(
-    headers,
-    'x-ca-'
+export const getToken: GetTokenFunction = ({
+  method,
+  headers,
+  url,
+  appSecret
+}) => {
+  const { canonicalHeaderKeys, canonicalHeaderString } = getCanonicalHeaders(
+    'x-ca-',
+    headers
   )
 
-  const headerStr = [
+  const headerString = [
     headers['date'],
     headers['accept'],
     headers['content-md5'],
     headers['content-type']
   ].join()
 
-  const signStr = [method, ...headerStr, canonicalHeaderStr, url].join()
+  const signString = [
+    method,
+    ...headerString,
+    canonicalHeaderString,
+    url
+  ].join()
 
   return {
-    'x-ca-signature': getSign(signStr, appSecret),
+    'x-ca-signature': getSign(signString, appSecret),
     'x-ca-signature-headers': canonicalHeaderKeys.join()
   }
 }
 
-export const getCanonicalHeaders = (
-  headers: Record<string, string>,
-  prefix: string
+export const getCanonicalHeaders: GetCanonicalHeaderFunction = (
+  prefix,
+  headers
 ) => {
   const canonicalHeaders = (Object.keys(headers)
     .filter((key) => key.startsWith(prefix))
@@ -58,17 +79,17 @@ export const getCanonicalHeaders = (
   >
 
   const canonicalHeaderKeys = Object.keys(canonicalHeaders).sort()
-  const canonicalHeaderStr = canonicalHeaderKeys.map(
-    (key) => canonicalHeaders[key]
-  )
+  const canonicalHeaderString = canonicalHeaderKeys
+    .map((key) => canonicalHeaders[key])
+    .join()
 
-  return { canonicalHeaderKeys, canonicalHeaderStr }
+  return { canonicalHeaderKeys, canonicalHeaderString }
 }
 
-export const getSign = (signStr: string, appSecret: string) => {
+export const getSign: GetSignFunction = (signString, appSecret) => {
   const buffer = crypto
     .createHmac('sha256', appSecret)
-    .update(signStr, 'utf8')
+    .update(signString, 'utf8')
     .digest()
 
   return Buffer.from(buffer).toString('base64')

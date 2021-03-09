@@ -8,15 +8,6 @@ const { getHeaders, getToken, getCanonicalHeaders, getSign, md5 } = util
 
 describe('test/util.test.ts', () => {
   it('Should be the result of getHeaders.', async () => {
-    const validationResult = (result: Record<string, unknown>) => {
-      assert(typeof result === 'object')
-      assert(typeof result['x-ca-timestamp'] === 'string')
-      assert(typeof result.date === 'string')
-      assert(result['x-ca-key'] === 'test')
-      assert(result['x-ca-stage'] === 'TEST')
-      assert(result.a === 'test')
-    }
-
     const presenceRequestType = () => {
       sinon.stub(util, 'md5').returns('sign')
 
@@ -31,11 +22,16 @@ describe('test/util.test.ts', () => {
         nonce: true
       })
 
+      assert(typeof result === 'object')
       assert(result['content-md5'] === 'sign')
       assert(typeof result['x-ca-nonce'] === 'string')
       assert(result['content-type'] === 'application/json; charset=UTF-8')
       assert(result.accept === 'application/json; charset=UTF-8')
-      validationResult(result)
+      assert(typeof result['x-ca-timestamp'] === 'string')
+      assert(typeof result.date === 'string')
+      assert(result['x-ca-key'] === 'test')
+      assert(result['x-ca-stage'] === 'TEST')
+      assert(result.a === 'test')
 
       sinon.restore()
     }
@@ -51,10 +47,15 @@ describe('test/util.test.ts', () => {
         nonce: false
       })
 
+      assert(typeof result === 'object')
       assert(result['content-md5'] === 'sign')
       assert(result.accept === 'application/json; charset=UTF-8')
       assert(result['content-type'] === 'application/json; charset=UTF-8')
-      validationResult(result)
+      assert(typeof result['x-ca-timestamp'] === 'string')
+      assert(typeof result.date === 'string')
+      assert(result['x-ca-key'] === 'test')
+      assert(result['x-ca-stage'] === 'TEST')
+      assert(result.a === 'test')
 
       sinon.restore()
     }
@@ -74,10 +75,15 @@ describe('test/util.test.ts', () => {
         nonce: false
       })
 
+      assert(typeof result === 'object')
       assert(result['content-md5'] === '')
       assert(result['content-type'] === 'application/text; charset=UTF-8')
       assert(result.accept === 'application/text; charset=UTF-8')
-      validationResult(result)
+      assert(typeof result['x-ca-timestamp'] === 'string')
+      assert(typeof result.date === 'string')
+      assert(result['x-ca-key'] === 'test')
+      assert(result['x-ca-stage'] === 'TEST')
+      assert(result.a === 'test')
 
       sinon.restore()
     }
@@ -88,39 +94,76 @@ describe('test/util.test.ts', () => {
   })
 
   it('Should be the result of getToken.', async () => {
-    sinon.stub(util, 'getCanonicalHeaders').returns({
-      canonicalHeaderKeys: ['x-ca-key', 'x-ca-stage'],
-      canonicalHeaderString: 'test1test2'
-    })
+    const existenceParameters = () => {
+      sinon.stub(util, 'getCanonicalHeaders').returns({
+        canonicalHeaderKeys: ['x-ca-key', 'x-ca-stage'],
+        canonicalHeaderString: 'x-ca-key:test1\nx-ca-stage:test2'
+      })
 
-    sinon.stub(util, 'getSign').returns('sign')
+      sinon.stub(util, 'getSign').returns('sign')
 
-    const result = getToken({
-      method: 'get',
-      headers: { a: 'test' },
-      url: 'http:https://www.test.com',
-      appSecret: 'test'
-    })
+      const result = getToken({
+        method: 'get',
+        headers: { a: 'test' },
+        url: 'http:https://www.test.com',
+        appSecret: 'test',
+        params: { test: 'test' }
+      })
 
-    assert(typeof result === 'object')
-    assert(result['x-ca-signature'] === 'sign')
-    assert(result['x-ca-signature-headers'] === 'x-ca-keyx-ca-stage')
+      assert(typeof result === 'object')
+      assert(result['x-ca-signature'] === 'sign')
+      assert(result['x-ca-signature-headers'] === 'x-ca-key,x-ca-stage')
 
-    sinon.restore()
+      sinon.restore()
+    }
+
+    const noParametersExist = () => {
+      sinon.stub(util, 'getCanonicalHeaders').returns({
+        canonicalHeaderKeys: ['x-ca-key', 'x-ca-stage'],
+        canonicalHeaderString: 'x-ca-key:test1\nx-ca-stage:test2'
+      })
+
+      sinon.stub(util, 'getSign').returns('sign')
+
+      const result = getToken({
+        method: 'get',
+        headers: { a: 'test' },
+        url: 'http:https://www.test.com',
+        appSecret: 'test'
+      })
+
+      assert(typeof result === 'object')
+      assert(result['x-ca-signature'] === 'sign')
+      assert(result['x-ca-signature-headers'] === 'x-ca-key,x-ca-stage')
+
+      sinon.restore()
+    }
+
+    existenceParameters()
+    noParametersExist()
   })
 
   it('Should be the result of getCanonicalHeaders.', async () => {
-    const result = getCanonicalHeaders('x-ca-', {
+    const headers = {
       'x-ca-timestamp': 'test',
       'x-ca-key': 'test',
       'x-ca-stage': 'test'
-    })
+    } as Record<string, string>
+
+    const result = getCanonicalHeaders('x-ca-', headers)
+    const keys = ['x-ca-timestamp', 'x-ca-key', 'x-ca-stage']
 
     assert(typeof result === 'object')
-    assert(result.canonicalHeaderString === 'testtesttest')
     assert(
-      result.canonicalHeaderKeys.sort().toString() ===
-        ['x-ca-timestamp', 'x-ca-key', 'x-ca-stage'].sort().toString()
+      result.canonicalHeaderString ===
+        Object.keys(headers)
+          .sort()
+          .map((key) => `${key}:${headers[key]}`)
+          .join('\n')
+    )
+
+    assert(
+      result.canonicalHeaderKeys.sort().toString() === keys.sort().toString()
     )
   })
 
@@ -136,112 +179,3 @@ describe('test/util.test.ts', () => {
     assert(typeof result === 'string')
   })
 })
-
-// import * as assert from 'assert'
-// import {
-//   validateId,
-//   timeDiff,
-//   newTimestamp,
-//   nextMillisecond,
-//   timeEqual,
-//   isNextMillisecond,
-//   generateId,
-//   error,
-//   snowflake
-// } from '../src/gateway'
-
-// describe('test/snowflake.test.ts', () => {
-//   it('Should be the result of validateId', async () => {
-//     const result = validateId({
-//       id: BigInt(3),
-//       maxId: BigInt(2),
-//       message: '${maxId}'
-//     })
-
-//     assert(result === '2')
-//   })
-
-//   it('Should be the result of timeDiff', async () => {
-//     const result = timeDiff(BigInt(1), BigInt(2))
-
-//     assert(result === 'Clock moves backwards to reject the id generated for 1.')
-//   })
-
-//   it('Should be the result of timeEqual', async () => {
-//     const result = timeEqual({
-//       timestamp: BigInt(1),
-//       lastTimestamp: BigInt(1),
-//       sequence: BigInt(0),
-//       maxSequence: BigInt(0)
-//     })
-
-//     assert(typeof result === 'object')
-//     assert(typeof result.sequence === 'bigint')
-//     assert(typeof result.timestamp === 'bigint')
-//   })
-
-//   it('Should be the result of isNextMillisecond', async () => {
-//     const result = isNextMillisecond({
-//       timestamp: BigInt(1),
-//       lastTimestamp: BigInt(1),
-//       sequence: BigInt(0),
-//       maxSequence: BigInt(0)
-//     })
-
-//     assert(typeof result === 'object')
-//     assert(typeof result.sequence === 'bigint')
-//     assert(typeof result.timestamp === 'bigint')
-//   })
-
-//   it('Should be the result of nextMillisecond', async () => {
-//     const result = nextMillisecond(BigInt(Date.now()))
-
-//     assert(typeof result === 'bigint')
-//   })
-
-//   it('Should be the result of newTimestamp', async () => {
-//     const result = newTimestamp()
-
-//     assert(typeof result === 'bigint')
-//   })
-
-//   it('Should be the result of generateId', async () => {
-//     const result = generateId(
-//       {
-//         twEpoch: BigInt(1583734327332),
-//         timestampLeftShift: BigInt(22),
-//         dataCenterId: BigInt(0),
-//         dataCenterLeftShift: BigInt(17),
-//         workerId: BigInt(0),
-//         workerLeftShift: BigInt(12)
-//       },
-//       { timestamp: BigInt(1609430400000), sequence: BigInt(0) }
-//     )
-
-//     assert(typeof result === 'object')
-//     assert(typeof result.id === 'bigint')
-//     assert(typeof result.lastTimestamp === 'bigint')
-//     assert(typeof result.sequence === 'bigint')
-//   })
-
-//   it('Should be the result of error', async () => {
-//     try {
-//       error('error')
-//     } catch (error) {
-//       assert(error.message === 'error')
-//     }
-//   })
-
-//   it('Should be the result of snowflake', async () => {
-//     const generateId = snowflake({ twEpoch: 1577808000000 })
-//     const ids: string[] = []
-
-//     for (let index = 0; index < 200000; index++) {
-//       const id = generateId()
-
-//       ids.push(id)
-//     }
-
-//     assert([...new Set(ids)].length === 200000)
-//   })
-// })

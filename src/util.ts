@@ -40,26 +40,33 @@ export const getToken: GetTokenFunction = ({
   method,
   headers,
   url,
-  appSecret
+  appSecret,
+  params
 }) => {
   const { canonicalHeaderKeys, canonicalHeaderString } = getCanonicalHeaders(
     'x-ca-',
     headers
   )
 
-  const headerString = [
-    headers['date'],
+  const headerStrings = [
     headers['accept'],
     headers['content-md5'],
-    headers['content-type']
-  ].join()
+    headers['content-type'],
+    headers['date']
+  ]
+
+  const path = params
+    ? `${new URL(url).pathname}?${Object.keys(params)
+        .map((key) => `${key}=${params[key]}`)
+        .join('&')}`
+    : new URL(url).pathname
 
   const signString = [
-    method,
-    ...headerString,
+    method.toUpperCase(),
+    ...headerStrings,
     canonicalHeaderString,
-    url
-  ].join()
+    path
+  ].join('\n')
 
   return {
     'x-ca-signature': getSign(signString, appSecret),
@@ -71,17 +78,15 @@ export const getCanonicalHeaders: GetCanonicalHeaderFunction = (
   prefix,
   headers
 ) => {
-  const canonicalHeaders = (Object.keys(headers)
+  const canonicalHeaders = Object.keys(headers)
     .filter((key) => key.startsWith(prefix))
-    .map((key) => ({ [key]: `${key}:${headers[key]}` })) as unknown) as Record<
-    string,
-    string
-  >
+    .map((key) => ({ [key]: `${key}:${headers[key]}` }))
+    .reduce((a, b) => Object.assign(a, b), {})
 
   const canonicalHeaderKeys = Object.keys(canonicalHeaders).sort()
   const canonicalHeaderString = canonicalHeaderKeys
     .map((key) => canonicalHeaders[key])
-    .join()
+    .join('\n')
 
   return { canonicalHeaderKeys, canonicalHeaderString }
 }
@@ -96,4 +101,4 @@ export const getSign: GetSignFunction = (signString, appSecret) => {
 }
 
 export const md5: MD5Function = (data) =>
-  crypto.createHash('md5').update(data).digest('hex')
+  crypto.createHash('md5').update(data).digest('base64')

@@ -62,6 +62,11 @@ export interface GetTokenOptions {
    *
    */
   appSecret: string
+
+  /**
+   * Search parameters.
+   */
+  params?: Record<string, unknown>
 }
 
 /**

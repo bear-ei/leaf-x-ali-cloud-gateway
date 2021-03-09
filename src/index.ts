@@ -16,7 +16,7 @@ export const request: RequestFunction = ({
   defaultHeaders = {},
   timeout = 30000,
   baseUrl
-}) => async (path, { method = 'get', headers = {}, data, ...args }) => {
+}) => async (path, { method = 'get', headers = {}, data, params, ...args }) => {
   const requestHeaders = getHeaders({
     appKey,
     stage,
@@ -25,12 +25,13 @@ export const request: RequestFunction = ({
     headers: Object.assign({}, headers, defaultHeaders)
   })
 
-  const url = (baseUrl ? `${baseUrl}/${path}` : path) as string
+  const url = (baseUrl ? `${baseUrl}${path}` : path) as string
   const token = getToken({
     method,
     headers: requestHeaders,
     url,
-    appSecret
+    appSecret,
+    params
   })
 
   return axios.request({
@@ -38,6 +39,8 @@ export const request: RequestFunction = ({
     timeout,
     headers: Object.assign({}, requestHeaders, token),
     url,
+    params,
+    data,
     ...args
   })
 }

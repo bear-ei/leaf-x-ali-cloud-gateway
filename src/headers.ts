@@ -25,21 +25,24 @@ export const initGetRequestHeaders: InitGetRequestHeaders = ({
     'x-ca-timestamp': Date.now().toString(),
     'x-ca-key': appKey,
     'x-ca-stage': stage,
-    'content-type': headers ? headers['content-type'] : '',
+    'content-type':
+      (headers as Record<string, string>)?.['content-type'] ??
+      'application/json; charset=utf-8',
     'content-md5': contentMD5,
-    accept: 'application/json; charset=UTF-8',
+    accept: (headers as Record<string, string>)?.accept ?? '*/*',
+    date: (headers as Record<string, string>)?.date ?? '',
   };
 };
 
 export const getCanonicalHeaders: GetCanonicalHeaders = ({prefix}, headers) => {
   const spliceCanonicalHeaders = initSpliceCanonicalHeaders(headers);
-  const canonicalHeadersKeys = Object.keys(headers);
+  const canonicalHeadersKeys = Object.keys(headers)
+    .filter(key => key.startsWith(prefix))
+    .sort();
 
   return {
     canonicalHeadersKeysString: canonicalHeadersKeys.join(),
     canonicalHeadersString: canonicalHeadersKeys
-      .filter(key => key.startsWith(prefix))
-      .sort()
       .map(spliceCanonicalHeaders)
       .join('\n'),
   };

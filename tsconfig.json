@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "lib": ["DOM", "DOM.Iterable"],
-    "outDir": "build"
+    "outDir": "dist"
   },
   "include": ["src/**/*.ts", "test/**/*.ts"]
 }

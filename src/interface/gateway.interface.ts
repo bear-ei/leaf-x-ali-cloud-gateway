@@ -1,18 +1,43 @@
+import {Request} from './request.interface';
+
+/**
+ * Ali cloud gateway options.
+ */
 export interface GatewayOptions {
   /**
-   * Gateway application key.
+   * Gateway authorization application key.
    */
   appKey: string;
 
   /**
-   * Gateway application secret.
+   * Gateway authorization application secret.
    */
   appSecret: string;
 
   /**
-   * Gateway environment.
+   * Gateway runtime environment.
    *
    * Default RELEASE
    */
-  stage: string;
+  stage?: 'RELEASE' | 'PRE' | 'TEST';
+}
+
+/**
+ * Initialize the gateway result.
+ */
+export interface InitGatewayResult {
+  /**
+   * Request.
+   */
+  request: Request;
+}
+
+/**
+ * Initialize the gateway.
+ *
+ * @param options GatewayOptions
+ * @return InitGatewayResult
+ */
+export interface InitGateway {
+  (options: GatewayOptions): InitGatewayResult;
 }

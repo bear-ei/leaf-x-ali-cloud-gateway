@@ -1,6 +1,12 @@
 import {FetchOptions} from '@leaf-x/fetch';
 import {GatewayOptions} from './gateway.interface';
 
+/**
+ * Initialize the get request headers.
+ *
+ * @param options GatewayOptions
+ * @return GetRequestHeaders
+ */
 export interface InitGetRequestHeaders {
   (options: GatewayOptions): GetRequestHeaders;
 }
@@ -9,10 +15,14 @@ export interface InitGetRequestHeaders {
  * Get the request headers.
  *
  * @param options FetchOptions
- * @return Record<string, string>
+ * @return Record<string, unknown>;
  */
 export interface GetRequestHeaders {
   (options: FetchOptions): Record<string, unknown>;
+}
+
+export interface GetCanonicalHeadersOptions {
+  prefix: string;
 }
 
 export interface GetCanonicalHeadersResult {
@@ -21,31 +31,21 @@ export interface GetCanonicalHeadersResult {
 }
 
 /**
- * Canonical headers prefix options.
- */
-export interface PrefixOptions {
-  /**
-   * Canonical headers prefix.
-   */
-  prefix: string;
-}
-
-/**
- * Get the canonical request string.
+ * Get the canonical headers.
  *
- * @param prefixOptions     PrefixOptions
- * @param headers           Request headers.
+ * @param options GetCanonicalHeadersOptions
+ * @param headers Request headers.
  * @return GetCanonicalHeadersResult
  */
 export interface GetCanonicalHeaders {
   (
-    prefixOptions: PrefixOptions,
+    options: GetCanonicalHeadersOptions,
     headers: Record<string, unknown>
   ): GetCanonicalHeadersResult;
 }
 
 /**
- * Initialize the splice canonical request headers.
+ * Initialize the splice canonical headers.
  *
  * @param headers Request headers.
  * @return SpliceCanonicalHeaders
@@ -55,9 +55,9 @@ export interface InitSpliceCanonicalHeaders {
 }
 
 /**
- * Splice canonical request headers.
+ * Splice canonical headers.
  *
- * @param key Canonical request header key.
+ * @param key Request headers key.
  * @return string
  */
 export interface SpliceCanonicalHeaders {

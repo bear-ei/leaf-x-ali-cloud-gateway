@@ -1,4 +1,5 @@
 import {FetchOptions, HandleResponseResult} from '@leaf-x/fetch';
+import {GatewayOptions} from './gateway.interface';
 
 /**
  * HTTP request method.
@@ -14,6 +15,10 @@ export type HttpMethod =
   | 'PURGE'
   | 'LINK'
   | 'UNLINK';
+
+export interface InitRequest {
+  (options: GatewayOptions): Request;
+}
 
 /**
  * Request.

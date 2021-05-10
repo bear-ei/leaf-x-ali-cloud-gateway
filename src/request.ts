@@ -1,29 +1,23 @@
 import {fetch} from '@leaf-x/fetch';
 import {initGetRequestHeaders} from './headers';
+import {HttpMethod, InitRequest} from './interface/request.interface';
 import {getToken} from './token';
 
-export const initRequest = options => ({
-  method = 'GET',
-  url,
-  body,
-  headers = {'content-type': 'application/json; charset=utf-8'},
-}) => {
-  const requestHeaders = initGetRequestHeaders(options)({headers, body});
+export const initRequest: InitRequest = gatewayOptions => (url, options) => {
+  const {method = 'GET', body, headers} = options ?? {};
 
-  const {canonicalHeadersString, sign} = getToken({
-    secret,
-    method,
+  const requestHeaders = initGetRequestHeaders(gatewayOptions)({headers, body});
+  const {canonicalHeadersKeysString, sign} = getToken({
+    url,
+    secret: gatewayOptions.appSecret,
+    method: method.toLocaleUpperCase() as HttpMethod,
     headers: requestHeaders,
   });
 
   const token = {
-    'x-ca-signature': canonicalHeadersString,
-    'x-ca-signature-headers': sign,
+    'x-ca-signature': sign,
+    'x-ca-signature-headers': canonicalHeadersKeysString,
   };
 
-  options.headers
-    ? Object.assign(options.headers, {...token})
-    : Object.assign(options, {headers: {...token}});
-
-  return fetch(url, options);
+  return fetch(url, {method, body, headers: {...requestHeaders, ...token}});
 };

@@ -25,14 +25,19 @@ export interface GetTokenOptions {
   headers: Record<string, unknown>;
 }
 
+export interface GetTokenResult {
+  canonicalHeadersKeysString: string;
+  sign: string;
+}
+
 /**
  * Get token.
  *
  * @param options GetTokenOptions
- * @return string
+ * @return GetTokenResult
  */
 export interface GetToken {
-  (options: GetTokenOptions): string;
+  (options: GetTokenOptions): GetTokenResult;
 }
 
 /**
@@ -55,14 +60,19 @@ export interface GetSignStringOptions {
   headers: Record<string, unknown>;
 }
 
+export interface GetSignStringResult {
+  canonicalHeadersKeysString: string;
+  signString: string;
+}
+
 /**
  * Get the signature string.
  *
  * @param options GetSignStringOptions
- * @return string
+ * @return GetSignStringResult
  */
 export interface GetSignString {
-  (options: GetSignStringOptions): string;
+  (options: GetSignStringOptions): GetSignStringResult;
 }
 
 /**

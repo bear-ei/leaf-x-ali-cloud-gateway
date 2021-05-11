@@ -1,16 +1,19 @@
-import * as cryptoJs from 'crypto-js';
+import * as crypto from 'crypto';
 import {getCanonicalHeaders} from './headers';
 import {GetSignString, GetToken, InitSign} from './interface/token.interface';
 
 const initSign: InitSign = secret => signString =>
-  cryptoJs.HmacSHA256(signString, secret).toString(cryptoJs.enc.Base64);
+  crypto
+    .createHmac('sha256', secret)
+    .update(signString, 'utf8')
+    .digest('base64');
 
 const getSignString: GetSignString = ({method, url, headers}) => {
   const {search, pathname} = new URL(url);
-  const {
-    canonicalHeadersKeysString,
-    canonicalHeadersString,
-  } = getCanonicalHeaders({prefix: 'x-ca-'}, headers);
+  const {canonicalHeadersKeysString, canonicalHeadersString} =
+    getCanonicalHeaders({prefix: 'x-ca-'}, headers);
+
+  console.info(decodeURIComponent(search ? `${pathname}${search}` : pathname));
 
   return {
     canonicalHeadersKeysString,

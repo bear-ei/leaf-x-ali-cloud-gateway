@@ -21,12 +21,28 @@ export interface GetRequestHeaders {
   (options: FetchOptions): Record<string, unknown>;
 }
 
+/**
+ * Get canonical request headers options.
+ */
 export interface GetCanonicalHeadersOptions {
+  /**
+   * Canonical headers prefix.
+   */
   prefix: string;
 }
 
+/**
+ * Get canonical request headers result.
+ */
 export interface GetCanonicalHeadersResult {
+  /**
+   * Canonical headers key string.
+   */
   canonicalHeadersKeysString: string;
+
+  /**
+   * Canonical headers string.
+   */
   canonicalHeadersString: string;
 }
 

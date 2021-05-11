@@ -4,19 +4,26 @@ import {HttpMethod, InitRequest} from './interface/request.interface';
 import {getToken} from './token';
 
 export const initRequest: InitRequest = gatewayOptions => (url, options) => {
-  const {method = 'GET', body, headers} = options ?? {};
+  const {method = 'GET', body, headers, params = {}, ...args} = options ?? {};
   const requestHeaders = initGetRequestHeaders(gatewayOptions)({headers, body});
+  //   const requestUrl = handleUrl({url, params});
+
+  console.info(url);
   const {canonicalHeadersKeysString, sign} = getToken({
-    url,
+    url: url,
     secret: gatewayOptions.appSecret,
     method: method.toLocaleUpperCase() as HttpMethod,
     headers: requestHeaders,
   });
 
-  const token = {
-    'x-ca-signature': sign,
-    'x-ca-signature-headers': canonicalHeadersKeysString,
-  };
-
-  return fetch(url, {method, body, headers: {...requestHeaders, ...token}});
+  return fetch(url, {
+    method,
+    body,
+    headers: {
+      ...requestHeaders,
+      'x-ca-signature': sign,
+      'x-ca-signature-headers': canonicalHeadersKeysString,
+    },
+    ...args,
+  });
 };

@@ -16,6 +16,12 @@ export type HttpMethod =
   | 'LINK'
   | 'UNLINK';
 
+/**
+ * Initialize the request.
+ *
+ * @param options GatewayOptions.
+ * @return Request
+ */
 export interface InitRequest {
   (options: GatewayOptions): Request;
 }

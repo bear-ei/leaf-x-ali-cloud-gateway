@@ -9,11 +9,9 @@ apidoc
 docs
 coverage
 .idea
-package-lock.json
 .DS_*
 .nyc*
 run/
-package-lock.json
 .nodejs-cache
 AUTHORS
 .serverless

@@ -1,31 +1,31 @@
-# Snowflake
+# Gateway
 
-Twitter snowflake algorithm TypeScript implementation
+Ali cloud gateway.
 
 ## Installation
 
-> npm install @leaf-x/snowflake --save
+> npm install @leaf-x/ali-cloud-gateway --save
 
 ## Parameters
 
-| Name         |  Default Value |   Description   |
-| :----------- | -------------: | :-------------: |
-| dataCenterId |              0 | Data center id  |
-| workerId     |              0 | Work machine id |
-| twEpoch      | Required field | Start timestamp |
+| Name      |  Default Value | Description                               |
+| :-------- | -------------: | :---------------------------------------- |
+| appKey    | Required field | Gateway authorization application key.    |
+| appSecret | Required field | Gateway authorization application secret. |
+| stage     |        RELEASE | Gateway runtime environment.              |
 
 ## Use
 
 ```typescript
-import * as snowflake from '@leaf-x/snowflake'
+import * as snowflake from '@leaf-x/snowflake';
 
-const generateId = snowflake({
-  dataCenterId: 0,
-  workerId: 0,
-  twEpoch: 1583734327332
-})
+const request = gateway({
+  appKey: '2135455621223',
+  appSecret: 'MjEzNTQ1NTYyMTIyMw==',
+  twEpoch: 1583734327332,
+});
 
-const id = generateId()
+const result = await request('https://www.bing.com/');
 
-console.info(id)
+console.info(result);
 ```

@@ -22,21 +22,4 @@ describe('test/serverless.test.ts', () => {
     assert(typeof result === 'object');
     assert(typeof result.request === 'function');
   });
-
-  it('cc', async () => {
-    const result = gateway({
-      appKey: '203802925',
-      appSecret: 'PPrVWfM9whsiWZGQICcEZU1Nw7sthrAM',
-      stage: 'RELEASE',
-    });
-
-    const cc = await result
-      .request(
-        'https://dev.api.thallonet.com/v4/web/managements/updateLogs?test=中文',
-        {}
-      )
-      .catch(err => err);
-
-    console.info(cc);
-  });
 });

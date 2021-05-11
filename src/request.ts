@@ -5,7 +5,6 @@ import {getToken} from './token';
 
 export const initRequest: InitRequest = gatewayOptions => (url, options) => {
   const {method = 'GET', body, headers} = options ?? {};
-
   const requestHeaders = initGetRequestHeaders(gatewayOptions)({headers, body});
   const {canonicalHeadersKeysString, sign} = getToken({
     url,

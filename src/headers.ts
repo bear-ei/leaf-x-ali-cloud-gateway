@@ -1,4 +1,5 @@
 import {FetchOptions} from '@leaf-x/fetch';
+import * as CryptoJS from 'crypto-js';
 import * as uuid from 'uuid';
 import {
   GetCanonicalHeaders,
@@ -13,11 +14,8 @@ export const initGetRequestHeaders: InitGetRequestHeaders = ({
   appKey,
   stage,
 }) => ({headers, body}: FetchOptions) => {
-  const data =
-    typeof body === 'object' && body !== null ? JSON.stringify(body) : body;
-
-  const contentMD5 = data
-    ? CryptoJS.MD5(data).toString(CryptoJS.enc.Base64)
+  const contentMD5 = body
+    ? CryptoJS.MD5(body.toString()).toString(CryptoJS.enc.Base64)
     : '';
 
   return {

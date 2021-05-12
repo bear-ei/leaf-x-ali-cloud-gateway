@@ -1,4 +1,4 @@
-import {fetch} from '@leaf-x/fetch';
+import {fetch, handleUrl} from '@leaf-x/fetch';
 import {initGetRequestHeaders} from './headers';
 import {HttpMethod, InitRequest} from './interface/request.interface';
 import {getToken} from './token';
@@ -6,17 +6,15 @@ import {getToken} from './token';
 export const initRequest: InitRequest = gatewayOptions => (url, options) => {
   const {method = 'GET', body, headers, params = {}, ...args} = options ?? {};
   const requestHeaders = initGetRequestHeaders(gatewayOptions)({headers, body});
-  //   const requestUrl = handleUrl({url, params});
-
-  console.info(url);
+  const requestUrl = handleUrl({url, params});
   const {canonicalHeadersKeysString, sign} = getToken({
-    url: url,
+    url: requestUrl,
     secret: gatewayOptions.appSecret,
     method: method.toLocaleUpperCase() as HttpMethod,
     headers: requestHeaders,
   });
 
-  return fetch(url, {
+  return fetch(requestUrl, {
     method,
     body,
     headers: {

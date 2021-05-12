@@ -9,11 +9,19 @@ const initSign: InitSign = secret => signString =>
     .digest('base64');
 
 const getSignString: GetSignString = ({method, url, headers}) => {
-  const {search, pathname} = new URL(url);
+  const {searchParams, pathname} = new URL(url);
+  const queryParams = {} as Record<string, unknown>;
   const {canonicalHeadersKeysString, canonicalHeadersString} =
     getCanonicalHeaders({prefix: 'x-ca-'}, headers);
 
-  console.info(decodeURIComponent(search ? `${pathname}${search}` : pathname));
+  for (const key of searchParams.keys()) {
+    Object.assign(queryParams, {[key]: searchParams.get(key)});
+  }
+
+  const search = Object.keys(queryParams)
+    .sort()
+    .map(key => `${key}=${queryParams[key]}`)
+    .join('&');
 
   return {
     canonicalHeadersKeysString,
@@ -24,7 +32,7 @@ const getSignString: GetSignString = ({method, url, headers}) => {
       headers['content-type'],
       headers['date'],
       canonicalHeadersString,
-      decodeURIComponent(search ? `${pathname}${search}` : pathname),
+      decodeURIComponent(search ? `${pathname}?${search}` : pathname),
     ].join('\n'),
   };
 };

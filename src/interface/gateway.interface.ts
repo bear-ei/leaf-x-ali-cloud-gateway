@@ -20,6 +20,11 @@ export interface GatewayOptions {
    * Default RELEASE
    */
   stage?: 'RELEASE' | 'PRE' | 'TEST';
+
+  /**
+   * Default global request headers.
+   */
+  headers?: Record<string, unknown>;
 }
 
 /**

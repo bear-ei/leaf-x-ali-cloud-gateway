@@ -11,7 +11,7 @@ const initSpliceCanonicalHeaders: InitSpliceCanonicalHeaders = headers => key =>
   `${key}:${headers[key]}`;
 
 export const initGetRequestHeaders: InitGetRequestHeaders =
-  ({appKey, stage}) =>
+  ({appKey, stage, headers: defaultHeaders}) =>
   ({headers, body}: FetchOptions) => {
     const contentMD5 = body
       ? crypto.createHash('md5').update(body.toString(), 'utf-8').digest('hex')
@@ -28,6 +28,8 @@ export const initGetRequestHeaders: InitGetRequestHeaders =
       'content-md5': contentMD5,
       accept: (headers as Record<string, string>)?.accept ?? '*/*',
       date: (headers as Record<string, string>)?.date ?? '',
+      ...headers,
+      ...defaultHeaders,
     };
   };
 

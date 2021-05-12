@@ -1,6 +1,6 @@
 {
   "name": "@leaf-x/ali-cloud-gateway",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "./dist/src/index.js",
   "author": "sound shell <sound_shell@outlook.com>",
   "description": "Ali cloud gateway.",
@@ -14,7 +14,8 @@
     "url": "https://github.com/SoundShell/ali-cloud-gateway/issues"
   },
   "dependencies": {
-    "@leaf-x/fetch": "^1.2.3",
+    "@leaf-x/fetch": "^1.3.2",
+    "nock": "^13.0.11",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
@@ -40,6 +41,7 @@
       "src/**/*.ts"
     ],
     "exclude": [
+      "**/index.ts",
       "**/*.d.ts"
     ],
     "extension": [

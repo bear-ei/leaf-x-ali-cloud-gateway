@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {gateway} from '../src/gateway';
 
-describe('test/serverless.test.ts', () => {
+describe('test/gateway.test.ts', () => {
   it('should be the result of the gateway default options', async () => {
     const result = gateway({
       appKey: '1234455',
@@ -17,6 +17,7 @@ describe('test/serverless.test.ts', () => {
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
       stage: 'RELEASE',
+      timeout: 3000,
     });
 
     assert(typeof result === 'object');

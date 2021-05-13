@@ -79,3 +79,15 @@ export interface InitSpliceCanonicalHeaders {
 export interface SpliceCanonicalHeaders {
   (key: string): string;
 }
+
+export interface SetHeaders {
+  (key: string, val: string): Record<string, string>;
+}
+
+export interface DelHeaders {
+  (key: string): Record<string, string>;
+}
+
+export interface GetHeaders {
+  (key: string): string | undefined;
+}

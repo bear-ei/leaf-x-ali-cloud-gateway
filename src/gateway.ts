@@ -5,9 +5,10 @@ export const gateway: InitGateway = ({
   appKey,
   appSecret,
   stage = 'RELEASE',
+  timeout = 3000,
   ...args
 }) => {
-  const options = {appKey, appSecret, stage, ...args};
+  const options = {appKey, appSecret, stage, timeout, ...args};
 
   return {
     request: initRequest(options),

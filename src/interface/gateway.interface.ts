@@ -22,9 +22,16 @@ export interface GatewayOptions {
   stage?: 'RELEASE' | 'PRE' | 'TEST';
 
   /**
-   * Default global request headers.
+   * Set the global request headers.
    */
   headers?: Record<string, unknown>;
+
+  /**
+   * Set the global request timeout.
+   *
+   * Default 3000ms
+   */
+  timeout?: number;
 }
 
 /**

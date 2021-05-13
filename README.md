@@ -17,15 +17,15 @@ Ali cloud gateway.
 ## Use
 
 ```typescript
-import * as snowflake from '@leaf-x/snowflake';
+import {gateway} from '@leaf-x/ali-cloud-gateway';
 
-const request = gateway({
+const {request} = gateway({
   appKey: '2135455621223',
   appSecret: 'MjEzNTQ1NTYyMTIyMw==',
   twEpoch: 1583734327332,
 });
 
-const result = await request('https://www.bing.com/');
+const result = await request('https://www.leaf-x.app/');
 
 console.info(result);
 ```

@@ -36,10 +36,6 @@ console.info(result);
 
 > npm install @leaf-x/ali-cloud-gateway --save
 
-### [react-native-url-polyfill](https://github.com/charpeni/react-native-url-polyfill)
-
-> npm install react-native-url-polyfill --save
-
 ```typescript
 import 'react-native-url-polyfill/auto';
 ```

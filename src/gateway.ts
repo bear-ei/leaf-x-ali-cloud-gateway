@@ -1,6 +1,13 @@
 import {InitGateway} from './interface/gateway.interface';
 import {initRequest} from './request';
 
+const reactNative =
+  typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
+
+if (reactNative) {
+  require('react-native-url-polyfill/auto');
+}
+
 export const gateway: InitGateway = ({
   appKey,
   appSecret,

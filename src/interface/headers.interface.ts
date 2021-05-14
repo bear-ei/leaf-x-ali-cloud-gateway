@@ -2,6 +2,26 @@ import {FetchOptions} from '@leaf-x/fetch';
 import {GatewayOptions} from './gateway.interface';
 
 /**
+ * Initialize the get headers.
+ *
+ * @param options GatewayOptions
+ * @return GetHeaders
+ */
+export interface InitGetHeaders {
+  (options: GatewayOptions): GetHeaders;
+}
+
+/**
+ * Get the headers.
+ *
+ * @param options FetchOptions
+ * @return Record<string, unknown>;
+ */
+export interface GetHeaders {
+  (options: FetchOptions): Record<string, unknown>;
+}
+
+/**
  * Initialize the get request headers.
  *
  * @param options GatewayOptions
@@ -12,13 +32,25 @@ export interface InitGetRequestHeaders {
 }
 
 /**
+ * Get request header options.
+ *
+ * @extends FetchOptions
+ */
+export interface GetRequestHeadersOptions extends FetchOptions {
+  /**
+   * Request URL address.
+   */
+  url: string;
+}
+
+/**
  * Get the request headers.
  *
- * @param options FetchOptions
- * @return Record<string, unknown>;
+ * @param options GetRequestHeadersOptions
+ * @return Record<string, string>
  */
 export interface GetRequestHeaders {
-  (options: FetchOptions): Record<string, unknown>;
+  (options: GetRequestHeadersOptions): Record<string, string>;
 }
 
 /**
@@ -78,16 +110,4 @@ export interface InitSpliceCanonicalHeaders {
  */
 export interface SpliceCanonicalHeaders {
   (key: string): string;
-}
-
-export interface SetHeaders {
-  (key: string, val: string): Record<string, string>;
-}
-
-export interface DelHeaders {
-  (key: string): Record<string, string>;
-}
-
-export interface GetHeaders {
-  (key: string): string | undefined;
 }

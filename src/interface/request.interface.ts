@@ -36,3 +36,9 @@ export interface InitRequest {
 export interface Request {
   (url: string, options?: FetchOptions): Promise<HandleResponseResult>;
 }
+
+// export interface InitGetRequestToken {
+//   (options: GatewayOptions): any;
+// }
+
+// export interface GetRequestToken

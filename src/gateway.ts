@@ -5,6 +5,7 @@ const reactNative =
   typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
 
 if (reactNative) {
+  require('./shim');
   require('react-native-url-polyfill/auto');
 }
 

@@ -1,4 +1,5 @@
 import {Request} from './request.interface';
+import {SocketOptions} from './socket/socket.interface';
 
 /**
  * Ali cloud gateway options.
@@ -32,6 +33,11 @@ export interface GatewayOptions {
    * Default 3000ms
    */
   timeout?: number;
+
+  /**
+   * Socket options.
+   */
+  socket?: SocketOptions;
 }
 
 /**

@@ -2,21 +2,22 @@ import {FetchOptions} from '@leaf-x/fetch';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
 import {
-  DelHeaders,
   GetCanonicalHeaders,
-  GetHeaders,
+  InitGetHeaders,
   InitGetRequestHeaders,
   InitSpliceCanonicalHeaders,
-  SetHeaders,
 } from './interface/headers.interface';
+import {HttpMethod} from './interface/request.interface';
+import {getToken} from './token';
 
-const HEADERS = {} as Record<string, string>;
+const HEADERS = new Map();
 const initSpliceCanonicalHeaders: InitSpliceCanonicalHeaders = headers => key =>
   `${key}:${headers[key]}`;
 
-export const initGetRequestHeaders: InitGetRequestHeaders =
+const initGetHeaders: InitGetHeaders =
   ({appKey, stage, headers: defaultHeaders}) =>
   ({headers, data}: FetchOptions) => {
+    const addHeaders = {} as Record<string, string>;
     const json = typeof data === 'object' && data !== null;
     const contentMD5 = data
       ? crypto
@@ -24,6 +25,10 @@ export const initGetRequestHeaders: InitGetRequestHeaders =
           .update((json ? JSON.stringify(data) : `${data}`) as string)
           .digest('base64')
       : '';
+
+    for (const key of HEADERS.keys()) {
+      Object.assign(addHeaders, {[key]: HEADERS.get(key)});
+    }
 
     return {
       'x-ca-nonce': uuid.v4(),
@@ -36,9 +41,9 @@ export const initGetRequestHeaders: InitGetRequestHeaders =
       'content-md5': contentMD5,
       accept: (headers as Record<string, string>)?.accept ?? '*/*',
       date: '',
-      ...headers,
       ...defaultHeaders,
-      ...HEADERS,
+      ...addHeaders,
+      ...headers,
     };
   };
 
@@ -56,13 +61,26 @@ export const getCanonicalHeaders: GetCanonicalHeaders = ({prefix}, headers) => {
   };
 };
 
-export const setHeaders: SetHeaders = (key, val) =>
-  Object.assign(HEADERS, {[key]: val});
+export const initGetRequestHeaders: InitGetRequestHeaders =
+  gatewayOptions =>
+  ({headers, data, url, method = 'GET'}) => {
+    const requestHeaders = initGetHeaders(gatewayOptions)({
+      headers,
+      data,
+    });
 
-export const delHeaders: DelHeaders = key => {
-  delete HEADERS[key];
+    const {canonicalHeadersKeysString, sign} = getToken({
+      url,
+      secret: gatewayOptions.appSecret,
+      method: method.toLocaleUpperCase() as HttpMethod,
+      headers: requestHeaders,
+    });
 
-  return HEADERS;
-};
+    return {
+      ...requestHeaders,
+      'x-ca-signature': sign,
+      'x-ca-signature-headers': canonicalHeadersKeysString,
+    };
+  };
 
-export const getHeaders: GetHeaders = key => HEADERS[key];
+export {HEADERS};

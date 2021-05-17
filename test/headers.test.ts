@@ -1,11 +1,5 @@
 import * as assert from 'assert';
-import {
-  delHeaders,
-  getCanonicalHeaders,
-  getHeaders,
-  initGetRequestHeaders,
-  setHeaders,
-} from '../src/headers';
+import {getCanonicalHeaders, initGetRequestHeaders} from '../src/headers';
 
 describe('test/headers.test.ts', () => {
   it('should be the result of the default options in the request headers', async () => {
@@ -106,29 +100,5 @@ describe('test/headers.test.ts', () => {
           'x-ca-timestamp:1620702566222',
         ].join('\n')
     );
-  });
-
-  it('should be the result of setting up a global header request', async () => {
-    const result = setHeaders('token', 'token');
-
-    assert(result.token === 'token');
-  });
-
-  it('should be the result of setting up a global header request', async () => {
-    const result = getHeaders('token');
-
-    assert(result === 'token');
-  });
-
-  it('should get the result of the global request', async () => {
-    const result = getHeaders('token');
-
-    assert(result === 'token');
-  });
-
-  it('should be the result of deleting a global request', async () => {
-    const result = delHeaders('token');
-
-    assert(!result.token);
   });
 });

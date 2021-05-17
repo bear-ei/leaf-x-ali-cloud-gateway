@@ -1,13 +1,22 @@
+import {handleUrl} from '@leaf-x/fetch';
 import {initGetRequestHeaders} from '../headers';
+import {InitSocketSignUp} from '../interface/socket/signUp.interface';
 import {SOCKET} from './connect';
 
-const initSignUp =
-  () =>
-  ({method, data, params}) => {
-    const headers = initGetRequestHeaders(gatewayOptions)({
+export const initSignUp: InitSocketSignUp =
+  options =>
+  (path, {method, data, host, params}) => {
+    const url = `ws://${host}${path}`;
+    const requestUrl = handleUrl({url, params});
+    const headers = initGetRequestHeaders(options)({
+      url: requestUrl,
       data,
-      headers: {'x-ca-seq': '-1'},
+      host,
+      headers: {
+        'x-ca-seq': '-1',
+        'x-ca-websocket_api_type': JSON.stringify(['REGISTER']),
+      },
     });
 
-    SOCKET.send(JSON.stringify({method, data, params}));
+    SOCKET.send(JSON.stringify({method, data, host, path, headers}));
   };

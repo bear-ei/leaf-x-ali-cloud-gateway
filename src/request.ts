@@ -19,7 +19,7 @@ export const initRequest: InitRequest = gatewayOptions => (url, options) => {
     method,
     data: requestBody,
     headers,
-    params,
+    // params,
   });
 
   return fetch(requestUrl, {

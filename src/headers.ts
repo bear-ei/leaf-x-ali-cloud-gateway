@@ -71,6 +71,7 @@ export const initGetRequestHeaders: InitGetRequestHeaders =
 
     const {canonicalHeadersKeysString, sign} = getToken({
       url,
+
       secret: gatewayOptions.appSecret,
       method: method.toLocaleUpperCase() as HttpMethod,
       headers: requestHeaders,

@@ -1,12 +1,17 @@
-import {CommandWord as CommandWordEnum} from '../enum/s';
+import {CommandWord as CommandWordEnum} from '../enum/socket.enum';
+import {InitSocketConnect} from '../interface/socket/connect.interface';
+import {initSignUp} from './signUp';
 
 let HEART_TIMER!: NodeJS.Timeout;
 let SOCKET!: WebSocket;
 let HEART_NUMBER = 0;
+let REGISTER = false;
 
-const socketConnect =
-  ({ssl, host, port}) =>
-  (deviceId: string) => {
+const socketConnect: InitSocketConnect =
+  options =>
+  (deviceId: string, {ssl, host, port}) => {
+    const signUp = initSignUp(options);
+
     SOCKET = new WebSocket(`${ssl ? 'wss' : 'ws'}://${host}:${port}`);
     SOCKET.onopen = () => {
       if (SOCKET.readyState === 1) {
@@ -34,7 +39,7 @@ const socketConnect =
         rf: socketReconnect,
         os: socketReconnect,
         cr: socketReconnect,
-        ro: register,
+        ro: signUp,
         ho: () => HEART_NUMBER++,
         hf: socketReconnect,
         nf: () => {
@@ -72,13 +77,12 @@ const socketClose = () => {
   clearInterval(HEART_TIMER);
 
   SOCKET.close();
-  //   this._isRegister = false;
+  REGISTER = false;
   HEART_NUMBER = 0;
 };
 
 const socketReconnect = () => {
-  // this._isRegister &&
-  if (SOCKET.CONNECTING) {
+  if (REGISTER && SOCKET.CONNECTING) {
     // this.logout();
   } else {
     socketClose();

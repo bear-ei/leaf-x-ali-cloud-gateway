@@ -41,6 +41,11 @@ export interface GetRequestHeadersOptions extends FetchOptions {
    * Request URL address.
    */
   url: string;
+
+  /**
+   * Request host.
+   */
+  host: string;
 }
 
 /**

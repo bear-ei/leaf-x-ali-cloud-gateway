@@ -1,47 +1,55 @@
 import {CommandWord as CommandWordEnum} from '../enum/socket.enum';
-import {InitSocketConnect} from '../interface/socket/connect.interface';
-import {initSignUp} from './signUp';
+import {initSignOut} from './sign_out';
+import {initSignUp} from './sign_up';
 
-let HEART_TIMER!: NodeJS.Timeout;
-let SOCKET!: WebSocket;
-let HEART_NUMBER = 0;
-let REGISTER = false;
+const socket = options => {
+  let heartTimer!: NodeJS.Timeout;
+  let socket!: WebSocket;
+  let heartNumber = 0;
+  let signUpStatus = false;
+  let device!: string;
 
-const socketConnect: InitSocketConnect =
-  options =>
-  (deviceId: string, {ssl, host, port}) => {
+  const connect = (deviceId: string, {ssl, host, port}) => {
+    device = deviceId;
+
     const signUp = initSignUp(options);
 
-    SOCKET = new WebSocket(`${ssl ? 'wss' : 'ws'}://${host}:${port}`);
-    SOCKET.onopen = () => {
-      if (SOCKET.readyState === 1) {
-        SOCKET.send(`RG#${deviceId}`);
+    socket = new WebSocket(`${ssl ? 'wss' : 'ws'}://${host}:${port}`);
+    socket.onopen = () => {
+      if (socket.readyState === 1) {
+        socket.send(`RG#${deviceId}`);
       }
 
-      HEART_TIMER = setInterval(() => {
-        if (HEART_NUMBER % 2 === 0) {
-          HEART_NUMBER++;
-          SOCKET.send('H1');
+      heartTimer = setInterval(() => {
+        if (heartNumber % 2 === 0) {
+          heartNumber++;
+          socket.send('H1');
         } else {
-          socketReconnect();
+          reconnect();
         }
       }, 25 * 1000);
     };
 
-    SOCKET.onerror = () => {
-      if (SOCKET.readyState === 3) {
-        setInterval(() => socketReconnect(), 10 * 1000);
+    socket.onerror = () => {
+      if (socket.readyState === 3) {
+        setInterval(() => reconnect(), 10 * 1000);
       }
     };
 
-    SOCKET.onmessage = (message: MessageEvent) => {
+    socket.onmessage = (message: MessageEvent) => {
       const event = Object.freeze({
-        rf: socketReconnect,
-        os: socketReconnect,
-        cr: socketReconnect,
-        ro: signUp,
+        rf: () => {
+          signUpStatus = false;
+          reconnect();
+        },
+        os: reconnect,
+        cr: reconnect,
+        ro: () => {
+          signUpStatus = true;
+          signUp();
+        },
         ho: () => HEART_NUMBER++,
-        hf: socketReconnect,
+        hf: reconnect,
         nf: () => {
           //   if (!this.onNotify) {
           //     throw new Error('No notification');
@@ -73,24 +81,33 @@ const socketConnect: InitSocketConnect =
     };
   };
 
-const socketClose = () => {
-  clearInterval(HEART_TIMER);
+  const reconnect = () => {
+    signUpStatus && socket.CONNECTING ? initSignOut(options) : close();
 
-  SOCKET.close();
-  REGISTER = false;
-  HEART_NUMBER = 0;
+    connect(options);
+  };
+
+  const close = () => {
+    clearInterval(heartTimer);
+
+    socket.close();
+    signUpStatus = false;
+    heartNumber = 0;
+  };
+
+  return {
+    connect,
+    reconnect,
+    close,
+  };
 };
 
-const socketReconnect = () => {
-  if (REGISTER && SOCKET.CONNECTING) {
-    // this.logout();
-  } else {
-    socketClose();
-  }
+// export const socketClose = () => {
+//   clearInterval(HEART_TIMER);
 
-  SOCKET.CONNECTING ? '' : socketClose();
+//   SOCKET.close();
+//   SIGN_UP_STATUS = false;
+//   HEART_NUMBER = 0;
+// };
 
-  socketConnect();
-};
-
-export {SOCKET};
+// export {SOCKET};

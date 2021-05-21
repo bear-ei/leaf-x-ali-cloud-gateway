@@ -1,4 +1,3 @@
-import {FetchOptions} from '@leaf-x/fetch';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
 import {
@@ -16,8 +15,7 @@ const initSpliceCanonicalHeaders: InitSpliceCanonicalHeaders = headers => key =>
 
 const initGetHeaders: InitGetHeaders =
   ({appKey, stage, headers: defaultHeaders}) =>
-  ({headers, data}: FetchOptions) => {
-    const addHeaders = {} as Record<string, string>;
+  ({headers, data, host}) => {
     const json = typeof data === 'object' && data !== null;
     const contentMD5 = data
       ? crypto
@@ -26,11 +24,8 @@ const initGetHeaders: InitGetHeaders =
           .digest('base64')
       : '';
 
-    for (const key of HEADERS.keys()) {
-      Object.assign(addHeaders, {[key]: HEADERS.get(key)});
-    }
-
     return {
+      host: host,
       'x-ca-nonce': uuid.v4(),
       'x-ca-timestamp': `${Date.now()}`,
       'x-ca-key': appKey,
@@ -42,7 +37,6 @@ const initGetHeaders: InitGetHeaders =
       accept: (headers as Record<string, string>)?.accept ?? '*/*',
       date: '',
       ...defaultHeaders,
-      ...addHeaders,
       ...headers,
     };
   };
@@ -63,15 +57,15 @@ export const getCanonicalHeaders: GetCanonicalHeaders = ({prefix}, headers) => {
 
 export const initGetRequestHeaders: InitGetRequestHeaders =
   gatewayOptions =>
-  ({headers, data, url, method = 'GET'}) => {
+  ({host, headers, data, url, method = 'GET'}) => {
     const requestHeaders = initGetHeaders(gatewayOptions)({
       headers,
       data,
+      host,
     });
 
     const {canonicalHeadersKeysString, sign} = getToken({
       url,
-
       secret: gatewayOptions.appSecret,
       method: method.toLocaleUpperCase() as HttpMethod,
       headers: requestHeaders,
@@ -84,4 +78,4 @@ export const initGetRequestHeaders: InitGetRequestHeaders =
     };
   };
 
-export {HEADERS};
+export {HEADERS as headers};

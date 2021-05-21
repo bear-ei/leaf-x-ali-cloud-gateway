@@ -7,3 +7,5 @@ export enum CommandWord {
   HF = 'hf',
   NF = 'nf',
 }
+
+export type CommandWordString = 'RF' | 'OS' | 'CR' | 'RO' | 'HO' | 'HF' | 'NF';

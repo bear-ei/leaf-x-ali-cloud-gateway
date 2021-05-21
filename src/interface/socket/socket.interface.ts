@@ -1,13 +1,18 @@
 import {GatewayOptions} from '../gateway.interface';
 
 export interface SocketOptions {
-  //   host: string;
-  //   signUpUrl: string;
-  //   signOutUrl: string;
-  ssl?: boolean;
+  signUpPath: string;
+  signOutPath: string;
+  host: string;
+  secure?: boolean;
   port?: number;
+  deviceId?: string;
 }
 
 export interface InitSocket {
-  (options: GatewayOptions): any;
+  (options: GatewayOptions): Socket;
+}
+
+export interface Socket {
+  (): any;
 }

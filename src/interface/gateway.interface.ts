@@ -37,7 +37,7 @@ export interface GatewayOptions {
   /**
    * Socket options.
    */
-  socket?: SocketOptions;
+  socketOptions?: SocketOptions;
 }
 
 /**

@@ -26,19 +26,17 @@ export interface InitRequest {
   (options: GatewayOptions): Request;
 }
 
+export interface RequestOptions extends FetchOptions {
+  host?: string;
+}
+
 /**
  * Request.
  *
  * @param url Request URL address.
- * @param options FetchOptions
+ * @param options RequestOptions
  * @return Promise<HandleResponseResult>
  */
 export interface Request {
-  (url: string, options?: FetchOptions): Promise<HandleResponseResult>;
+  (url: string, options?: RequestOptions): Promise<HandleResponseResult>;
 }
-
-// export interface InitGetRequestToken {
-//   (options: GatewayOptions): any;
-// }
-
-// export interface GetRequestToken

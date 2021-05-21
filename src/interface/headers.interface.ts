@@ -11,14 +11,21 @@ export interface InitGetHeaders {
   (options: GatewayOptions): GetHeaders;
 }
 
+export interface GetHeadersOptions extends FetchOptions {
+  /**
+   * Request host.
+   */
+  host?: string;
+}
+
 /**
  * Get the headers.
  *
- * @param options FetchOptions
+ * @param options GetHeadersOptions
  * @return Record<string, unknown>;
  */
 export interface GetHeaders {
-  (options: FetchOptions): Record<string, unknown>;
+  (options: GetHeadersOptions): Record<string, unknown>;
 }
 
 /**
@@ -45,7 +52,7 @@ export interface GetRequestHeadersOptions extends FetchOptions {
   /**
    * Request host.
    */
-  host: string;
+  host?: string;
 }
 
 /**

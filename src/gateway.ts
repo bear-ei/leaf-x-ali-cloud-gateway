@@ -1,5 +1,7 @@
+import {headers} from './headers';
 import {InitGateway} from './interface/gateway.interface';
 import {initRequest} from './request';
+import {initSocket} from './socket';
 
 const reactNative =
   typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
@@ -18,7 +20,9 @@ export const gateway: InitGateway = ({
 }) => {
   const options = {appKey, appSecret, stage, timeout, ...args};
 
-  return {
+  return Object.freeze({
     request: initRequest(options),
-  };
+    socket: initSocket(options),
+    headers,
+  });
 };

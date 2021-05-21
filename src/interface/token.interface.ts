@@ -76,21 +76,26 @@ export interface GetSignString {
 }
 
 /**
- * Initialize the signature.
- *
- * @param accessSecretKey   Ali cloud access key.
- * @return Sign
+ * Signature options.
  */
-export interface InitSign {
-  (accessSecretKey: string): Sign;
+export interface SignOptions {
+  /**
+   * Signature string.
+   */
+  signString: string;
+
+  /**
+   * Secret key.
+   */
+  secret: string;
 }
 
 /**
  * Signature.
  *
- * @param signString string
+ * @param options SignOptions
  * @return string
  */
 export interface Sign {
-  (signString: string): string;
+  (options: SignOptions): string;
 }

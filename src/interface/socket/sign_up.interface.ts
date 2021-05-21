@@ -6,8 +6,9 @@ export interface InitSocketSignUp {
 }
 
 export interface SocketSignUpOptions extends FetchOptions {
-  host: string;
-  path: string;
+  host?: string;
+  seq: number;
+  //   path: string;
 }
 
 export interface SocketSignUp {

@@ -6,10 +6,10 @@ export interface InitSocketSignOut {
 }
 
 export interface SocketSignOutOptions extends FetchOptions {
-  host: string;
-  path: string;
+  host?: string;
+  seq: number;
 }
 
 export interface SocketSignOut {
-  (url: string, options: SocketSignOutOptions): void;
+  (url: string, options: SocketSignOutOptions): string;
 }

@@ -1,8 +1,8 @@
 import * as crypto from 'crypto';
 import {getCanonicalHeaders} from './headers';
-import {GetSignString, GetToken, InitSign} from './interface/token.interface';
+import {GetSignString, GetToken, Sign} from './interface/token.interface';
 
-const initSign: InitSign = secret => signString =>
+const sign: Sign = ({secret, signString}) =>
   crypto
     .createHmac('sha256', secret)
     .update(signString, 'utf8')
@@ -40,5 +40,8 @@ const getSignString: GetSignString = ({method, url, headers}) => {
 export const getToken: GetToken = ({secret, ...args}) => {
   const {canonicalHeadersKeysString, signString} = getSignString(args);
 
-  return {canonicalHeadersKeysString, sign: initSign(secret)(signString)};
+  return {
+    canonicalHeadersKeysString,
+    sign: sign({secret, signString}),
+  };
 };

@@ -74,9 +74,9 @@ export const initSocket: InitSocket = ({socketOptions, ...args}) => {
     socket.onerror = () => {
       if (socket.readyState === 3) {
         setInterval(() => reconnect(), 10 * 1000);
+      } else {
+        throw new Error('socket connection error.');
       }
-
-      throw new Error('socket connection error.');
     };
 
     socket.onmessage = (message: MessageEvent) => {

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {gateway} from '../src/gateway';
 
 describe('test/gateway.test.ts', () => {
-  it('should be the result of the gateway default options', async () => {
+  it('should be the default gateway options', async () => {
     const result = gateway({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
@@ -12,7 +12,7 @@ describe('test/gateway.test.ts', () => {
     assert(typeof result.request === 'function');
   });
 
-  it('should be the result of the gateway customization options', async () => {
+  it('should be a gateway customization options', async () => {
     const result = gateway({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',

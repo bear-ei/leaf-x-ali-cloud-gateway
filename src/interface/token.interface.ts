@@ -1,11 +1,11 @@
 import {HttpMethod} from './request.interface';
 
 /**
- * Get token options.
+ * Get request token options.
  */
 export interface GetTokenOptions {
   /**
-   * Ali cloud secret.
+   * Application secret key.
    */
   secret: string;
 
@@ -15,23 +15,33 @@ export interface GetTokenOptions {
   method: HttpMethod;
 
   /**
-   * Request URL address.
+   * Request URL.
    */
   url: string;
 
   /**
    * Request headers.
    */
-  headers: Record<string, unknown>;
+  headers: Record<string, string>;
 }
 
+/**
+ * Get the result of the request token.
+ */
 export interface GetTokenResult {
+  /**
+   * Canonical of request header key string.
+   */
   canonicalHeadersKeysString: string;
+
+  /**
+   * Request a signature.
+   */
   sign: string;
 }
 
 /**
- * Get token.
+ * Get the request token.
  *
  * @param options GetTokenOptions
  * @return GetTokenResult
@@ -50,18 +60,28 @@ export interface GetSignStringOptions {
   method: HttpMethod;
 
   /**
-   * Request URL address.
+   * Request URL.
    */
   url: string;
 
   /**
    * Request headers.
    */
-  headers: Record<string, unknown>;
+  headers: Record<string, string>;
 }
 
+/**
+ * Get the result of the signature string.
+ */
 export interface GetSignStringResult {
+  /**
+   * Canonical of request header key string.
+   */
   canonicalHeadersKeysString: string;
+
+  /**
+   * Signature string.
+   */
   signString: string;
 }
 
@@ -85,7 +105,7 @@ export interface SignOptions {
   signString: string;
 
   /**
-   * Secret key.
+   * Application secret key.
    */
   secret: string;
 }

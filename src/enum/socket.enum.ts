@@ -1,3 +1,6 @@
+/**
+ * Socket command word.
+ */
 export enum CommandWord {
   RF = 'rf',
   OS = 'os',
@@ -8,4 +11,7 @@ export enum CommandWord {
   NF = 'nf',
 }
 
+/**
+ * Socket command word string.
+ */
 export type CommandWordString = 'RF' | 'OS' | 'CR' | 'RO' | 'HO' | 'HF' | 'NF';

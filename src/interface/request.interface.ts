@@ -1,6 +1,5 @@
 import {FetchOptions, HandleResponseResult} from '@leaf-x/fetch';
 import {GatewayOptions} from './gateway.interface';
-
 /**
  * HTTP request method.
  */
@@ -17,23 +16,31 @@ export type HttpMethod =
   | 'UNLINK';
 
 /**
- * Initialize the request.
+ * Initialization request.
  *
- * @param options GatewayOptions.
+ * @param options GatewayOptions
  * @return Request
  */
 export interface InitRequest {
   (options: GatewayOptions): Request;
 }
 
+/**
+ * Request Options.
+ *
+ * @extends FetchOptions
+ */
 export interface RequestOptions extends FetchOptions {
+  /**
+   * Request host.
+   */
   host?: string;
 }
 
 /**
  * Request.
  *
- * @param url Request URL address.
+ * @param url Request URL.
  * @param options RequestOptions
  * @return Promise<HandleResponseResult>
  */

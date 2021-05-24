@@ -1,36 +1,32 @@
 import {Request} from './request.interface';
-import {SocketOptions} from './socket/socket.interface';
+import {Socket, SocketOptions} from './socket.interface';
 
 /**
- * Ali cloud gateway options.
+ * Gateway options.
  */
 export interface GatewayOptions {
   /**
-   * Gateway authorization application key.
+   * Application key.
    */
   appKey: string;
 
   /**
-   * Gateway authorization application secret.
+   * Application secret key.
    */
   appSecret: string;
 
   /**
-   * Gateway runtime environment.
-   *
-   * Default RELEASE
+   * Access to the API gateway environment.
    */
   stage?: 'RELEASE' | 'PRE' | 'TEST';
 
   /**
-   * Set the global request headers.
+   * Default request headers.
    */
-  headers?: Record<string, unknown>;
+  headers?: Record<string, string>;
 
   /**
-   * Set the global request timeout.
-   *
-   * Default 3000ms
+   * Request timeout, in milliseconds.
    */
   timeout?: number;
 
@@ -45,9 +41,14 @@ export interface GatewayOptions {
  */
 export interface InitGatewayResult {
   /**
-   * Request.
+   * Gateway request.
    */
   request: Request;
+
+  /**
+   * Socket.
+   */
+  socket: Socket;
 }
 
 /**

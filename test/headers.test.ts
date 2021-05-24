@@ -2,35 +2,14 @@ import * as assert from 'assert';
 import {getCanonicalHeaders, initGetRequestHeaders} from '../src/headers';
 
 describe('test/headers.test.ts', () => {
-  it('should be the result of the default options in the request headers', async () => {
-    const result = initGetRequestHeaders({
-      appKey: '1234455',
-      appSecret: 'MTIzNDQ1NQ==',
-      stage: 'RELEASE',
-    })({});
-
-    assert(typeof result === 'object');
-    assert(typeof result['x-ca-nonce'] === 'string');
-    assert(typeof result['x-ca-timestamp'] === 'string');
-    assert(result['x-ca-key'] === '1234455');
-    assert(result['x-ca-stage'] === 'RELEASE');
-    assert(result['content-type'] === 'application/json; charset=utf-8');
-    assert(result['content-md5'] === '');
-    assert(result['accept'] === '*/*');
-    assert(typeof result['date'] === 'string');
-  });
-
-  it('should be the result of the custom option JSON data in the request header', async () => {
+  it('should get the request headers', async () => {
     const result = initGetRequestHeaders({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
       stage: 'RELEASE',
     })({
-      headers: {
-        'content-type': 'application/json; charset=utf-8',
-        accept: '*/*',
-        date: '',
-      },
+      url: 'https://leaf-x.app',
+      host: 'leaf-x.app',
       data: {test: 'test'},
     });
 
@@ -45,12 +24,13 @@ describe('test/headers.test.ts', () => {
     assert(typeof result['date'] === 'string');
   });
 
-  it('should be the result of the custom option text data in the request header', async () => {
+  it('should be a text data request headers', async () => {
     const result = initGetRequestHeaders({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
       stage: 'RELEASE',
     })({
+      url: 'https://leaf-x.app',
       headers: {
         'content-type': 'application/json; charset=utf-8',
         accept: '*/*',
@@ -70,7 +50,7 @@ describe('test/headers.test.ts', () => {
     assert(typeof result['date'] === 'string');
   });
 
-  it('should be getting the headers results of the canonical request', async () => {
+  it('should be obtained from the canonical header', async () => {
     const result = getCanonicalHeaders(
       {prefix: 'x-ca-'},
       {

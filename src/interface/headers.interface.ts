@@ -2,7 +2,7 @@ import {FetchOptions} from '@leaf-x/fetch';
 import {GatewayOptions} from './gateway.interface';
 
 /**
- * Initialize the get headers.
+ * Initialize the get request headers.
  *
  * @param options GatewayOptions
  * @return GetHeaders
@@ -11,6 +11,11 @@ export interface InitGetHeaders {
   (options: GatewayOptions): GetHeaders;
 }
 
+/**
+ * Get request headers options.
+ *
+ * @extends FetchOptions
+ */
 export interface GetHeadersOptions extends FetchOptions {
   /**
    * Request host.
@@ -19,13 +24,13 @@ export interface GetHeadersOptions extends FetchOptions {
 }
 
 /**
- * Get the headers.
+ * Get the request headers.
  *
  * @param options GetHeadersOptions
- * @return Record<string, unknown>;
+ * @return Record<string, string>
  */
 export interface GetHeaders {
-  (options: GetHeadersOptions): Record<string, unknown>;
+  (options: GetHeadersOptions): Record<string, string>;
 }
 
 /**
@@ -39,13 +44,13 @@ export interface InitGetRequestHeaders {
 }
 
 /**
- * Get request header options.
+ * Get request headers options.
  *
  * @extends FetchOptions
  */
 export interface GetRequestHeadersOptions extends FetchOptions {
   /**
-   * Request URL address.
+   * Request URL.
    */
   url: string;
 
@@ -66,32 +71,32 @@ export interface GetRequestHeaders {
 }
 
 /**
- * Get canonical request headers options.
+ * Get canonical request header options.
  */
 export interface GetCanonicalHeadersOptions {
   /**
-   * Canonical headers prefix.
+   * Canonical request header prefix.
    */
   prefix: string;
 }
 
 /**
- * Get canonical request headers result.
+ * Get canonical request header result.
  */
 export interface GetCanonicalHeadersResult {
   /**
-   * Canonical headers key string.
+   * Canonical request headers key string.
    */
   canonicalHeadersKeysString: string;
 
   /**
-   * Canonical headers string.
+   * Canonical request headers string.
    */
   canonicalHeadersString: string;
 }
 
 /**
- * Get the canonical headers.
+ * Get canonical request headers.
  *
  * @param options GetCanonicalHeadersOptions
  * @param headers Request headers.
@@ -100,26 +105,6 @@ export interface GetCanonicalHeadersResult {
 export interface GetCanonicalHeaders {
   (
     options: GetCanonicalHeadersOptions,
-    headers: Record<string, unknown>
+    headers: Record<string, string>
   ): GetCanonicalHeadersResult;
-}
-
-/**
- * Initialize the splice canonical headers.
- *
- * @param headers Request headers.
- * @return SpliceCanonicalHeaders
- */
-export interface InitSpliceCanonicalHeaders {
-  (headers: Record<string, unknown>): SpliceCanonicalHeaders;
-}
-
-/**
- * Splice canonical headers.
- *
- * @param key Request headers key.
- * @return string
- */
-export interface SpliceCanonicalHeaders {
-  (key: string): string;
 }

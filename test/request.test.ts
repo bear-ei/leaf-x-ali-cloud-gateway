@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as nock from 'nock';
+import {headers as globalHeaders} from '../src/headers';
 import {initRequest} from '../src/request';
 
 const good = 'hello world';
@@ -12,7 +13,9 @@ describe('test/request.test.ts', () => {
     nock('https://leaf-x.app').post('/body').reply(200, good);
   });
 
-  it('should be the result of the default options response status 200', async () => {
+  it('should be the default request', async () => {
+    globalHeaders.set('test', 'test');
+
     await initRequest({
       appKey: '223333',
       appSecret: '197876',
@@ -21,7 +24,7 @@ describe('test/request.test.ts', () => {
     );
   });
 
-  it('should be the result of custom options response status 200', async () => {
+  it('should be a custom option request', async () => {
     await initRequest({
       appKey: '223333',
       appSecret: '197876',
@@ -30,7 +33,7 @@ describe('test/request.test.ts', () => {
     );
   });
 
-  it('should be the result of post data response status 200', async () => {
+  it('should be a post data request', async () => {
     await initRequest({
       appKey: '223333',
       appSecret: '197876',
@@ -40,7 +43,7 @@ describe('test/request.test.ts', () => {
     }).then(result => assert(result.status === 200));
   });
 
-  it('should be the result of post body response status 200', async () => {
+  it('should be a post body request', async () => {
     await initRequest({
       appKey: '223333',
       appSecret: '197876',

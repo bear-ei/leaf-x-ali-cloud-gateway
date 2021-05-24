@@ -4,15 +4,11 @@ import {
   GetCanonicalHeaders,
   InitGetHeaders,
   InitGetRequestHeaders,
-  InitSpliceCanonicalHeaders,
 } from './interface/headers.interface';
 import {HttpMethod} from './interface/request.interface';
 import {getToken} from './token';
 
 const HEADERS = new Map();
-const initSpliceCanonicalHeaders: InitSpliceCanonicalHeaders = headers => key =>
-  `${key}:${headers[key]}`;
-
 const initGetHeaders: InitGetHeaders =
   ({appKey, stage, headers: defaultHeaders}) =>
   ({headers, data, host}) => {
@@ -25,24 +21,23 @@ const initGetHeaders: InitGetHeaders =
       : '';
 
     return {
-      host: host,
       'x-ca-nonce': uuid.v4(),
       'x-ca-timestamp': `${Date.now()}`,
       'x-ca-key': appKey,
-      'x-ca-stage': stage,
+      'x-ca-stage': stage as string,
       'content-type':
         (headers as Record<string, string>)?.['content-type'] ??
         'application/json; charset=utf-8',
       'content-md5': contentMD5,
       accept: (headers as Record<string, string>)?.accept ?? '*/*',
       date: '',
+      ...(host ? {host} : undefined),
       ...defaultHeaders,
-      ...headers,
+      ...(headers as Record<string, string>),
     };
   };
 
 export const getCanonicalHeaders: GetCanonicalHeaders = ({prefix}, headers) => {
-  const spliceCanonicalHeaders = initSpliceCanonicalHeaders(headers);
   const canonicalHeadersKeys = Object.keys(headers)
     .filter(key => key.startsWith(prefix))
     .sort();
@@ -50,7 +45,7 @@ export const getCanonicalHeaders: GetCanonicalHeaders = ({prefix}, headers) => {
   return {
     canonicalHeadersKeysString: canonicalHeadersKeys.join(),
     canonicalHeadersString: canonicalHeadersKeys
-      .map(spliceCanonicalHeaders)
+      .map(key => `${key}:${headers[key]}`)
       .join('\n'),
   };
 };

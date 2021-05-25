@@ -2,31 +2,32 @@ import {Request} from './request.interface';
 import {Socket, SocketOptions} from './socket.interface';
 
 /**
- * Gateway options.
+ * Gateway API options.
  */
 export interface GatewayOptions {
   /**
-   * Application key.
+   * Gateway application key.
    */
   appKey: string;
 
   /**
-   * Application secret key.
+   * Gateway application secret.
    */
   appSecret: string;
 
   /**
-   * Access to the API gateway environment.
+   * Accesses the API gateway environment. default is RELEASE.
    */
   stage?: 'RELEASE' | 'PRE' | 'TEST';
 
   /**
-   * Default request headers.
+   * Set the default request headers.
    */
   headers?: Record<string, string>;
 
   /**
-   * Request timeout, in milliseconds.
+   * Set the request timeout in milliseconds. The default timeout is 3000
+   * milliseconds.
    */
   timeout?: number;
 
@@ -37,26 +38,26 @@ export interface GatewayOptions {
 }
 
 /**
- * Initialize the gateway result.
+ * Result of the Gateway API.
  */
-export interface InitGatewayResult {
+export interface GatewayResult {
   /**
    * Gateway request.
    */
   request: Request;
 
   /**
-   * Socket.
+   * Gateway socket.
    */
   socket: Socket;
 }
 
 /**
- * Initialize the gateway.
+ * Gateway API.
  *
  * @param options GatewayOptions
  * @return InitGatewayResult
  */
-export interface InitGateway {
-  (options: GatewayOptions): InitGatewayResult;
+export interface Gateway {
+  (options: GatewayOptions): GatewayResult;
 }

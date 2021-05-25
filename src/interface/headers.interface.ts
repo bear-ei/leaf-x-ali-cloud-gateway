@@ -2,7 +2,7 @@ import {FetchOptions} from '@leaf-x/fetch';
 import {GatewayOptions} from './gateway.interface';
 
 /**
- * Initialize the get request headers.
+ * Initialize the function that gets the headers.
  *
  * @param options GatewayOptions
  * @return GetHeaders
@@ -12,7 +12,7 @@ export interface InitGetHeaders {
 }
 
 /**
- * Get request headers options.
+ * Get options for the request headers.
  *
  * @extends FetchOptions
  */
@@ -24,7 +24,7 @@ export interface GetHeadersOptions extends FetchOptions {
 }
 
 /**
- * Get the request headers.
+ * Get the headers.
  *
  * @param options GetHeadersOptions
  * @return Record<string, string>
@@ -34,7 +34,7 @@ export interface GetHeaders {
 }
 
 /**
- * Initialize the get request headers.
+ * Initialize the function that gets the request headers.
  *
  * @param options GatewayOptions
  * @return GetRequestHeaders
@@ -44,13 +44,13 @@ export interface InitGetRequestHeaders {
 }
 
 /**
- * Get request headers options.
+ * Get options for the request headers.
  *
  * @extends FetchOptions
  */
 export interface GetRequestHeadersOptions extends FetchOptions {
   /**
-   * Request URL.
+   * URL of the request.
    */
   url: string;
 
@@ -71,17 +71,17 @@ export interface GetRequestHeaders {
 }
 
 /**
- * Get canonical request header options.
+ * Get options for the canonical request headers.
  */
 export interface GetCanonicalHeadersOptions {
   /**
-   * Canonical request header prefix.
+   * Canonical request headers prefix.
    */
   prefix: string;
 }
 
 /**
- * Get canonical request header result.
+ * Get the result of the canonical request headers.
  */
 export interface GetCanonicalHeadersResult {
   /**
@@ -96,7 +96,7 @@ export interface GetCanonicalHeadersResult {
 }
 
 /**
- * Get canonical request headers.
+ * Get the canonical request headers.
  *
  * @param options GetCanonicalHeadersOptions
  * @param headers Request headers.

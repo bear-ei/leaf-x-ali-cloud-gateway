@@ -2,16 +2,16 @@ import {FetchOptions} from '@leaf-x/fetch';
 import {GatewayOptions} from './gateway.interface';
 
 /**
- * Socket options.
+ * Options for the socket API.
  */
 export interface SocketOptions {
   /**
-   * Sign up path.
+   * Socket sign up path.
    */
   signUpPath: string;
 
   /**
-   * Sign out path.
+   * Socket sign out path.
    */
   signOutPath: string;
 
@@ -21,27 +21,23 @@ export interface SocketOptions {
   host: string;
 
   /**
-   * Socket protocol.
-   *
-   * Default: wss
+   * Socket protocol. Default is ws
    */
   protocol?: 'wss' | 'ws';
 
   /**
-   * Socket port.
-   *
-   * Default: 8080
+   * Socket port. Default is 8080
    */
   port?: number;
 
   /**
-   * Device ID.
+   * The device ID of the connected socket.
    */
   deviceId?: string;
 }
 
 /**
- * Initialize the socket.
+ * The function to initialize the socket.
  *
  * @param options GatewayOptions
  * @return Socket
@@ -51,30 +47,81 @@ export interface InitSocket {
 }
 
 /**
- * Socket result.
+ * Socket event.
+ */
+export type Event =
+  | 'open'
+  | 'close'
+  | 'message'
+  | 'error'
+  | 'signUp'
+  | 'signOut';
+
+/**
+ * The result of the socket API.
  */
 export interface SocketResult {
   /**
-   * Socket connect.
+   * connect socket.
    */
   readonly connect: () => void;
 
   /**
-   * Socket reconnect.
+   * reconnect socket.
    */
   readonly reconnect: () => void;
 
   /**
-   * Socket close.
+   * close socket.
    */
   readonly close: () => void;
 
   /**
-   * Listening for socket events.
+   * Listen to socket events.
    */
-  readonly on: (event: 'message', callback: Function) => void;
+  readonly on: SocketOn;
 
-  readonly emit: (event: 'message', ...args: unknown[]) => void;
+  /**
+   * Send socket event.
+   */
+  readonly emit: SocketEmit;
+
+  /**
+   * Send socket message.
+   */
+  readonly send: SocketSend;
+}
+
+/**
+ * Listen to socket event.
+ *
+ * @param event Event
+ * @param callback Function
+ * @return void
+ */
+export interface SocketOn {
+  (event: Event, callback: Function): void;
+}
+
+/**
+ * Send socket event.
+ *
+ * @param event Event
+ * @param options unknown
+ * @return void
+ */
+export interface SocketEmit {
+  (event: Event, options: unknown): void;
+}
+
+/**
+ * Send socket message.
+ *
+ * @param message Send a message.
+ * @return void
+ */
+export interface SocketSend {
+  (message: string | Record<string, unknown>): void;
 }
 
 /**
@@ -87,17 +134,17 @@ export interface Socket {
 }
 
 /**
- * Initialize the socket request.
+ * Initialize the function that gets the socket request message.
  *
  * @param options GatewayOptions
- * @return SocketRequest
+ * @return GetSocketRequestMessage
  */
-export interface InitSocketRequest {
-  (options: GatewayOptions): SocketRequest;
+export interface InitGetSocketRequestMessage {
+  (options: GatewayOptions): GetSocketRequestMessage;
 }
 
 /**
- * Socket request options.
+ * Options for socket request.
  *
  * @extends FetchOptions
  */
@@ -124,12 +171,12 @@ export interface SocketRequestOptions extends FetchOptions {
 }
 
 /**
- * Socket request.
+ * Get the socket request message.
  *
- * @param url Request URL.
+ * @param url URL of the request.
  * @param options SocketRequestOptions
  * @return string
  */
-export interface SocketRequest {
+export interface GetSocketRequestMessage {
   (url: string, options: SocketRequestOptions): string;
 }

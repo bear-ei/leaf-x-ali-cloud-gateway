@@ -2,17 +2,51 @@ import {Server} from 'mock-socket';
 import {initSocket} from '../src/socket';
 
 describe('test/token.test.ts', () => {
-  it('should get the request token', async () => {
-    const mockServer = new Server('wss://localhost:8080/');
+  let mockServer!: Server;
 
-    mockServer.on('connection', s => {
-      s.on('message', data => {
+  before(() => {
+    const fakeURL = 'wss://localhost:8080';
+
+    mockServer = new Server(fakeURL);
+    mockServer.on('connection', socket => {
+      socket.on('message', data => {
         if ((data as string).startsWith('RG')) {
-          s.send('NF# test message from mock server');
+          socket.send('RO#1534692949977#25000');
+        }
+
+        if ((data as string).startsWith('H1')) {
+          socket.send('HO# The heartbeat is maintained successfully.');
+        }
+
+        if ((data as string).startsWith('signOut')) {
+          socket.send('HF# Heartbeat hold failure.');
         }
       });
     });
+  });
 
+  //   it('should be a gateway sign up', done => {
+  //     const socket = initSocket({
+  //       appKey: '1234455',
+  //       appSecret: 'MTIzNDQ1NQ==',
+  //       socketOptions: {
+  //         host: 'localhost',
+  //         signOutPath: '',
+  //         signUpPath: '',
+  //       },
+  //     })();
+
+  //     socket.connect();
+  //     socket.on('signUp', (m: Record<string, unknown>) => {
+  //       assert(m.success);
+  //     });
+
+  //     setTimeout(() => {
+  //       done();
+  //     }, 100);
+  //   });
+
+  it('should be a gateway sign out', done => {
     const socket = initSocket({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
@@ -21,18 +55,26 @@ describe('test/token.test.ts', () => {
         signOutPath: '',
         signUpPath: '',
       },
-    });
+    })();
 
-    const socketC = socket();
+    socket.connect();
 
-    socketC.connect();
+    // socket.on('open', () => {
+    //   socket.signUp();
+    // });
 
-    socketC.on('message', (result: any) => {
-      console.info(result);
-    });
+    // socket.on('signUp', () => {
+    //   console.info(signUp);
+    // });
+
+    // socket.send('signOut');
 
     setTimeout(() => {
-      //   mockServer.stop();
-    }, 100);
+      done();
+    }, 1000);
+  });
+
+  after(() => {
+    mockServer.stop();
   });
 });

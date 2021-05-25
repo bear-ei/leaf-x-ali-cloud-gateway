@@ -1,11 +1,11 @@
 import {HttpMethod} from './request.interface';
 
 /**
- * Get request token options.
+ * The options to get the request token.
  */
 export interface GetTokenOptions {
   /**
-   * Application secret key.
+   * Gateway application secret.
    */
   secret: string;
 
@@ -15,7 +15,7 @@ export interface GetTokenOptions {
   method: HttpMethod;
 
   /**
-   * Request URL.
+   * URL of the request.
    */
   url: string;
 
@@ -51,7 +51,7 @@ export interface GetToken {
 }
 
 /**
- * Get signature string options.
+ * The options to get the signature string.
  */
 export interface GetSignStringOptions {
   /**
@@ -60,7 +60,7 @@ export interface GetSignStringOptions {
   method: HttpMethod;
 
   /**
-   * Request URL.
+   * URL of the request.
    */
   url: string;
 
@@ -96,7 +96,7 @@ export interface GetSignString {
 }
 
 /**
- * Signature options.
+ * The options to sign.
  */
 export interface SignOptions {
   /**
@@ -105,7 +105,7 @@ export interface SignOptions {
   signString: string;
 
   /**
-   * Application secret key.
+   * Gateway application secret.
    */
   secret: string;
 }

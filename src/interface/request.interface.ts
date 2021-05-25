@@ -16,7 +16,7 @@ export type HttpMethod =
   | 'UNLINK';
 
 /**
- * Initialization request.
+ * The function that initialize the request.
  *
  * @param options GatewayOptions
  * @return Request
@@ -26,7 +26,7 @@ export interface InitRequest {
 }
 
 /**
- * Request Options.
+ * The request options.
  *
  * @extends FetchOptions
  */
@@ -40,7 +40,7 @@ export interface RequestOptions extends FetchOptions {
 /**
  * Request.
  *
- * @param url Request URL.
+ * @param url URL of the request.
  * @param options RequestOptions
  * @return Promise<HandleResponseResult>
  */

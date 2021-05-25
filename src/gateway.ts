@@ -1,9 +1,9 @@
 import {headers} from './headers';
-import {InitGateway} from './interface/gateway.interface';
+import {Gateway} from './interface/gateway.interface';
 import {initRequest} from './request';
 import {initSocket} from './socket';
 
-export const gateway: InitGateway = ({
+export const gateway: Gateway = ({
   appKey,
   appSecret,
   stage = 'RELEASE',

@@ -179,14 +179,7 @@ export const initSocket: InitSocket = ({
       };
     };
 
-    return {
-      connect,
-      reconnect,
-      close,
-      on,
-      emit,
-      send,
-    };
+    return {connect, reconnect, close, on, emit, send};
   };
 };
 

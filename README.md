@@ -21,20 +21,53 @@ Ali cloud gateway.
 ```typescript
 import {gateway} from '@leaf-x/ali-cloud-gateway';
 
-const {request} = gateway({
+
+const {request,socket} = gateway({
   appKey: '2135455621223',
   appSecret: 'MjEzNTQ1NTYyMTIyMw==',
   stage: "RELEASE,
 });
 
+// request
 const result = await request('https://www.leaf-x.app/');
 
 console.info(result);
+
+// socket
+socket.connect();
+
+socket.on('open', (data) => {
+    console.info(data.success);
+});
+
+socket.on('close', (data) => {
+    console.info(data.success);
+});
+
+
+socket.on('error', (data) => {
+    console.info(data.success);
+});
+
+
+socket.on('message', (message) => {
+    console.info(message);
+});
+
+socket.on('error', (error) => {
+    console.info(error);
+});
+
+socket.send("https://www.leaf-x.app/");
+
+socket.close();
+
 ```
 
 ## React Native
 
 > npm install @leaf-x/ali-cloud-gateway --save
+> npm install react-native-url-polyfill --save
 
 ```typescript
 import 'react-native-url-polyfill/auto';

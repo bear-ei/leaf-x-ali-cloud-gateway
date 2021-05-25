@@ -129,9 +129,9 @@ export const initSocket: InitSocket = ({
       socket.onerror = error => {
         if (socket.readyState === 3) {
           reconnectTimer = setInterval(() => reconnect(), 10 * 1000);
-        } else {
-          emit('error', error);
         }
+
+        emit('error', error);
       };
 
       socket.onmessage = (messageEvent: MessageEvent) => {

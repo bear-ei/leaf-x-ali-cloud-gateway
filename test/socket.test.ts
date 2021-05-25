@@ -5,7 +5,7 @@ describe('test/token.test.ts', () => {
   let mockServer!: Server;
 
   before(() => {
-    const fakeURL = 'wss://localhost:8080';
+    const fakeURL = 'ws://localhost:8080';
 
     mockServer = new Server(fakeURL);
     mockServer.on('connection', socket => {
@@ -36,11 +36,6 @@ describe('test/token.test.ts', () => {
   //       },
   //     })();
 
-  //     socket.connect();
-  //     socket.on('signUp', (m: Record<string, unknown>) => {
-  //       assert(m.success);
-  //     });
-
   //     setTimeout(() => {
   //       done();
   //     }, 100);
@@ -58,16 +53,6 @@ describe('test/token.test.ts', () => {
     })();
 
     socket.connect();
-
-    // socket.on('open', () => {
-    //   socket.signUp();
-    // });
-
-    // socket.on('signUp', () => {
-    //   console.info(signUp);
-    // });
-
-    // socket.send('signOut');
 
     setTimeout(() => {
       done();

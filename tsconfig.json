@@ -5,5 +5,5 @@
     "lib": ["DOM", "DOM.Iterable"],
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "src/shim.js"]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

@@ -3,10 +3,10 @@ import * as nock from 'nock';
 import {headers as globalHeaders} from '../src/headers';
 import {initRequest} from '../src/request';
 
-const good = 'hello world';
-
 describe('test/request.test.ts', () => {
   before(async () => {
+    const good = 'hello world';
+
     nock('https://leaf-x.app').get('/default/succeed').reply(200, good);
     nock('https://leaf-x.app').get('/custom/succeed').reply(200, good);
     nock('https://leaf-x.app').post('/data').reply(200, good);

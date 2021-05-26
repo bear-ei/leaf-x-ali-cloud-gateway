@@ -3,12 +3,12 @@ import * as uuid from 'uuid';
 import {CommandWord, CommandWordString} from './enum/socket.enum';
 import {initGetRequestHeaders} from './headers';
 import {
+  EmitSocket,
   InitGetSocketRequestMessage,
   InitSocket,
-  SocketEmit,
-  SocketOn,
+  OnSocket,
+  SendSocket,
   SocketOptions,
-  SocketSend,
 } from './interface/socket.interface';
 
 export const initSocket: InitSocket = ({
@@ -31,17 +31,16 @@ export const initSocket: InitSocket = ({
   let reconnectTimer!: NodeJS.Timeout;
   let socket!: WebSocket;
   let heartNumber = 0;
-
   let signUpStatus = false;
 
-  const events = {} as Record<string, Function[]>;
   const getRequestMessage = initGetSocketRequestMessage(gatewayOptionsArgs);
-  const on: SocketOn = (event, callback) => {
+  const events = {} as Record<string, Function[]>;
+  const on: OnSocket = (event, callback) => {
     events[event] = events[event] ?? [];
     events[event].push(callback);
   };
 
-  const emit: SocketEmit = (event, ...args) => {
+  const emit: EmitSocket = (event, ...args) => {
     if (events[event]) {
       for (const item of events[event]) {
         item.apply(item, args);
@@ -50,40 +49,46 @@ export const initSocket: InitSocket = ({
   };
 
   const signUp = () => {
-    const message = getRequestMessage(signUpPath, {
-      protocol,
-      type: 'REGISTER',
-      method: 'POST',
-      host,
-      seq,
-    });
+    if (!signUpStatus) {
+      const message = getRequestMessage(signUpPath, {
+        protocol,
+        type: 'REGISTER',
+        method: 'POST',
+        host,
+        seq,
+      });
 
-    socket.send(message);
-    signUpStatus = true;
-    emit('signUp', {
-      success: true,
-      message: 'Gateway sign up is successful.',
-    });
+      socket.send(message);
+      signUpStatus = true;
+
+      emit('signUp', {
+        success: true,
+        message: 'Gateway sign up is successful.',
+      });
+    }
   };
 
   const signOut = () => {
-    const message = getRequestMessage(signOutPath, {
-      protocol,
-      type: 'UNREGISTER',
-      method: 'POST',
-      host,
-      seq,
-    });
+    if (signUpStatus) {
+      const message = getRequestMessage(signOutPath, {
+        protocol,
+        type: 'UNREGISTER',
+        method: 'POST',
+        host,
+        seq,
+      });
 
-    socket.send(message);
-    signUpStatus = false;
-    emit('signOut', {
-      success: true,
-      message: 'Gateway sign out is successful.',
-    });
+      socket.send(message);
+      signUpStatus = false;
+
+      emit('signOut', {
+        success: true,
+        message: 'Gateway sign out is successful.',
+      });
+    }
   };
 
-  const send: SocketSend = message => {
+  const send: SendSocket = message => {
     const data =
       typeof message === 'string' ? message : JSON.stringify(message);
 
@@ -94,28 +99,30 @@ export const initSocket: InitSocket = ({
     const connect = () => {
       seq++;
       socket = new WebSocket(`${protocol}://${host}:${port}`);
+
       onSocket();
     };
 
     const reconnect = () => {
-      clearInterval(reconnectTimer);
+      if (signUpStatus && socket.readyState === 1) {
+        signOut();
+      }
 
-      signUpStatus && socket.CONNECTING ? signOut() : close();
-
+      close();
       connect();
     };
 
     const close = () => {
-      clearInterval(heartTimer);
+      signOut();
 
       socket.close();
-      signUpStatus = false;
-      heartNumber = 0;
     };
 
     const onSocket = () => {
       socket.onopen = () => {
         if (socket.readyState === 1) {
+          clearInterval(reconnectTimer);
+
           socket.send(`RG#${deviceId}`);
 
           emit('open', {
@@ -136,12 +143,10 @@ export const initSocket: InitSocket = ({
 
       socket.onmessage = (messageEvent: MessageEvent) => {
         const event = Object.freeze({
-          rf: (): void => {
-            signUpStatus = false;
-            reconnect();
-          },
+          rf: reconnect,
           os: reconnect,
           cr: reconnect,
+          hf: reconnect,
           ro: (message: string): void => {
             const [, , heartbeatInterval] = message.split('#');
 
@@ -156,10 +161,16 @@ export const initSocket: InitSocket = ({
 
             signUp();
           },
-          ho: (): number => heartNumber++,
-          hf: reconnect,
+          ho: () => {
+            heartNumber++;
+
+            emit('heartbeat', {
+              success: true,
+              message: 'Maintaining a successful heartbeat.',
+            });
+          },
           nf: (message: string): void => {
-            emit('message', message);
+            emit('message', message.slice(3));
 
             socket.send('NO');
           },
@@ -172,6 +183,10 @@ export const initSocket: InitSocket = ({
       };
 
       socket.close = () => {
+        clearInterval(heartTimer);
+
+        heartNumber = 0;
+
         emit('close', {
           success: true,
           message: 'Connection is closed.',

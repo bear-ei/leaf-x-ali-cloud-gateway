@@ -55,7 +55,8 @@ export type Event =
   | 'message'
   | 'error'
   | 'signUp'
-  | 'signOut';
+  | 'signOut'
+  | 'heartbeat';
 
 /**
  * The result of the socket API.
@@ -79,17 +80,17 @@ export interface SocketResult {
   /**
    * Listen to socket events.
    */
-  readonly on: SocketOn;
+  readonly on: OnSocket;
 
   /**
    * Send socket event.
    */
-  readonly emit: SocketEmit;
+  readonly emit: EmitSocket;
 
   /**
    * Send socket message.
    */
-  readonly send: SocketSend;
+  readonly send: SendSocket;
 }
 
 /**
@@ -99,7 +100,7 @@ export interface SocketResult {
  * @param callback Function
  * @return void
  */
-export interface SocketOn {
+export interface OnSocket {
   (event: Event, callback: Function): void;
 }
 
@@ -110,7 +111,7 @@ export interface SocketOn {
  * @param options unknown
  * @return void
  */
-export interface SocketEmit {
+export interface EmitSocket {
   (event: Event, options: unknown): void;
 }
 
@@ -120,7 +121,7 @@ export interface SocketEmit {
  * @param message Send a message.
  * @return void
  */
-export interface SocketSend {
+export interface SendSocket {
   (message: string | Record<string, unknown>): void;
 }
 

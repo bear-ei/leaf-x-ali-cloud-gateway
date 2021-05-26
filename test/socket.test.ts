@@ -1,48 +1,39 @@
-import {Server} from 'mock-socket';
+import * as assert from 'assert';
+import {Server, WebSocket} from 'mock-socket';
+import {SocketResult} from '../src/interface/socket.interface';
 import {initSocket} from '../src/socket';
 
-describe('test/token.test.ts', () => {
-  let mockServer!: Server;
+global.WebSocket = WebSocket;
 
+let MOCK_SERVER!: Server;
+let SOCKET!: SocketResult;
+
+describe('test/socket.test.ts', () => {
   before(() => {
-    const fakeURL = 'ws://localhost:8080';
-
-    mockServer = new Server(fakeURL);
-    mockServer.on('connection', socket => {
-      socket.on('message', data => {
+    MOCK_SERVER = new Server('ws://localhost:8080');
+    MOCK_SERVER.on('connection', s => {
+      s.on('message', data => {
         if ((data as string).startsWith('RG')) {
-          socket.send('RO#1534692949977#25000');
+          s.send('RO#1534692949977#1000');
         }
 
         if ((data as string).startsWith('H1')) {
-          socket.send('HO# The heartbeat is maintained successfully.');
+          s.send('HO#The heartbeat is maintained successfully.');
         }
 
-        if ((data as string).startsWith('signOut')) {
-          socket.send('HF# Heartbeat hold failure.');
+        if ((data as string).startsWith('OS')) {
+          s.send(
+            'OS#The volume of client requests reaches the traffic control threshold of the API gateway.'
+          );
+        }
+
+        if ((data as string).startsWith('NF')) {
+          s.send('NF#OK.');
         }
       });
     });
-  });
 
-  //   it('should be a gateway sign up', done => {
-  //     const socket = initSocket({
-  //       appKey: '1234455',
-  //       appSecret: 'MTIzNDQ1NQ==',
-  //       socketOptions: {
-  //         host: 'localhost',
-  //         signOutPath: '',
-  //         signUpPath: '',
-  //       },
-  //     })();
-
-  //     setTimeout(() => {
-  //       done();
-  //     }, 100);
-  //   });
-
-  it('should be a gateway sign out', done => {
-    const socket = initSocket({
+    SOCKET = initSocket({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
       socketOptions: {
@@ -51,15 +42,94 @@ describe('test/token.test.ts', () => {
         signUpPath: '',
       },
     })();
+  });
 
-    socket.connect();
+  it('should be socket connection ready', done => {
+    SOCKET.connect();
+    SOCKET.on('open', (data: Record<string, unknown>) => {
+      assert(data.success);
+      assert(
+        data.message ===
+          'The connection has been established and is ready for communication.'
+      );
+    });
+
+    SOCKET.on('signUp', (data: Record<string, unknown>) => {
+      assert(data.success);
+      assert(data.message === 'Gateway sign up is successful.');
+    });
 
     setTimeout(() => {
       done();
-    }, 1000);
+    }, 100);
+  });
+
+  it('should be socket heartbeat', done => {
+    SOCKET.on('heartbeat', (data: Record<string, unknown>) => {
+      assert(data.success);
+      assert(data.message === 'Maintaining a successful heartbeat.');
+    });
+
+    setTimeout(() => {
+      done();
+    }, 2000);
+  }).timeout(3000);
+
+  it('should be socket error', done => {
+    SOCKET.on('error', (data: Record<string, unknown>) => {
+      assert(data.type === 'error');
+    });
+
+    MOCK_SERVER.simulate('error');
+
+    setTimeout(() => {
+      done();
+    }, 100);
+  });
+
+  it('should be socket reconnect', done => {
+    SOCKET.on('open', (data: Record<string, unknown>) => {
+      assert(data.success);
+    });
+
+    SOCKET.send('OS');
+
+    setTimeout(() => {
+      done();
+    }, 100);
+  });
+
+  it('should be socket message', done => {
+    SOCKET.on('message', (message: string) => {
+      assert(message === 'OK.');
+    });
+
+    SOCKET.send('NF');
+
+    setTimeout(() => {
+      done();
+    }, 100);
+  });
+
+  it('should be socket closed', done => {
+    SOCKET.on('close', (data: Record<string, unknown>) => {
+      assert(data.success);
+      assert(data.message === 'Connection is closed.');
+    });
+
+    SOCKET.on('signOut', (data: Record<string, unknown>) => {
+      assert(data.success);
+      assert(data.message === 'Gateway sign out is successful.');
+    });
+
+    SOCKET.close();
+
+    setTimeout(() => {
+      done();
+    }, 100);
   });
 
   after(() => {
-    mockServer.stop();
+    MOCK_SERVER.stop();
   });
 });

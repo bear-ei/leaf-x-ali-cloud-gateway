@@ -44,24 +44,31 @@ socket.on('close', (data) => {
     console.info(data.success);
 });
 
+socket.on('message', (message) => {
+    console.info(message);
+});
 
 socket.on('error', (data) => {
     console.info(data.success);
 });
 
-
-socket.on('message', (message) => {
-    console.info(message);
+socket.on('signUp', (data) => {
+    console.info(data.success);
 });
 
-socket.on('error', (error) => {
-    console.info(error);
+socket.on('signOut', (data) => {
+    console.info(data.success);
+});
+
+socket.on('heartbeat', (data) => {
+    console.info(data.success);
 });
 
 socket.send("https://www.leaf-x.app/");
 
 socket.close();
 
+socket.reconnect();
 ```
 
 ## React Native

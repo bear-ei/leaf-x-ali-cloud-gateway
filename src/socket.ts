@@ -1,9 +1,15 @@
 import {handleRequestUrl} from '@leaf-x/fetch';
 import * as uuid from 'uuid';
-import {CommandWord, CommandWordString} from './enum/socket.enum';
-import {initGetRequestHeaders} from './headers';
+import {
+  CommandWord,
+  CommandWordString,
+  ResponseEvent,
+  ResponseEventString,
+} from './enum/socket.enum';
+import {headers as globalHeaders, initGetRequestHeaders} from './headers';
 import {
   EmitSocket,
+  HandleOtherMessage,
   InitGetSocketRequestMessage,
   InitSocket,
   OnSocket,
@@ -33,7 +39,9 @@ export const initSocket: InitSocket = ({
   let heartNumber = 0;
   let signUpStatus = false;
 
-  const getRequestMessage = initGetSocketRequestMessage(gatewayOptionsArgs);
+  const getSocketRequestMessage =
+    initGetSocketRequestMessage(gatewayOptionsArgs);
+
   const events = {} as Record<string, Function[]>;
   const on: OnSocket = (event, callback) => {
     events[event] = events[event] ?? [];
@@ -50,7 +58,7 @@ export const initSocket: InitSocket = ({
 
   const signUp = () => {
     if (!signUpStatus) {
-      const message = getRequestMessage(signUpPath, {
+      const message = getSocketRequestMessage(signUpPath, {
         protocol,
         type: 'REGISTER',
         method: 'POST',
@@ -59,18 +67,12 @@ export const initSocket: InitSocket = ({
       });
 
       socket.send(message);
-      signUpStatus = true;
-
-      emit('signUp', {
-        success: true,
-        message: 'Gateway sign up is successful.',
-      });
     }
   };
 
   const signOut = () => {
     if (signUpStatus) {
-      const message = getRequestMessage(signOutPath, {
+      const message = getSocketRequestMessage(signOutPath, {
         protocol,
         type: 'UNREGISTER',
         method: 'POST',
@@ -79,12 +81,6 @@ export const initSocket: InitSocket = ({
       });
 
       socket.send(message);
-      signUpStatus = false;
-
-      emit('signOut', {
-        success: true,
-        message: 'Gateway sign out is successful.',
-      });
     }
   };
 
@@ -93,6 +89,46 @@ export const initSocket: InitSocket = ({
       typeof message === 'string' ? message : JSON.stringify(message);
 
     socket.send(data);
+  };
+
+  const handleOtherMessage: HandleOtherMessage = message => {
+    let data!: unknown;
+
+    try {
+      data = JSON.parse(message as string);
+    } catch (error) {
+      data = message;
+    }
+
+    const event = Object.freeze({
+      signUp: () => {
+        signUpStatus = true;
+
+        emit('signUp', {
+          success: true,
+          message: 'Gateway sign up is successful.',
+        });
+      },
+      signOut: () => {
+        signUpStatus = false;
+
+        emit('signOut', {
+          success: true,
+          message: 'Gateway sign out is successful.',
+        });
+
+        socket.close();
+      },
+    });
+
+    if (typeof data === 'object' && data !== null) {
+      const {status, body} = data as Record<string, unknown>;
+      const handleEvent = event[ResponseEvent[body as ResponseEventString]];
+
+      status === 200 && handleEvent ? handleEvent() : emit('error', data);
+    } else {
+      emit('message', data);
+    }
   };
 
   return () => {
@@ -104,18 +140,16 @@ export const initSocket: InitSocket = ({
     };
 
     const reconnect = () => {
-      if (signUpStatus && socket.readyState === 1) {
-        signOut();
-      }
+      emit('reconnect', 'Try to re-establish the connection.');
 
       close();
       connect();
     };
 
     const close = () => {
-      signOut();
-
-      socket.close();
+      if (socket.readyState === 1) {
+        signUpStatus ? signOut() : socket.close();
+      }
     };
 
     const onSocket = () => {
@@ -141,7 +175,7 @@ export const initSocket: InitSocket = ({
         emit('error', error);
       };
 
-      socket.onmessage = (messageEvent: MessageEvent) => {
+      socket.onmessage = messageEvent => {
         const event = Object.freeze({
           rf: reconnect,
           os: reconnect,
@@ -176,10 +210,13 @@ export const initSocket: InitSocket = ({
           },
         });
 
-        const data = messageEvent.data as string;
+        const data = messageEvent.data;
         const signal = data?.slice(0, 2) as CommandWordString;
+        const handEvent = event[CommandWord[signal]];
 
-        event[CommandWord[signal]](data);
+        console.info(data);
+
+        handEvent ? handEvent(data) : handleOtherMessage(data);
       };
 
       socket.close = () => {
@@ -200,15 +237,34 @@ export const initSocket: InitSocket = ({
 
 const initGetSocketRequestMessage: InitGetSocketRequestMessage =
   options =>
-  (path, {type, protocol, seq, method, data, host, params = {}}) => {
+  (path, {type, protocol, seq, method, data = {}, host, params = {}}) => {
     const url = `${protocol}://${host}${path}`;
     const requestUrl = handleRequestUrl({url, params});
+    const addHeaders = {} as Record<string, string>;
+
+    for (const key of globalHeaders.keys()) {
+      Object.assign(addHeaders, {[key]: globalHeaders.get(key)});
+    }
+
     const headers = initGetRequestHeaders(options)({
+      method,
       url: requestUrl,
       data,
       host,
-      headers: {'x-ca-seq': `${seq}`, 'x-ca-websocket_api_type': type},
+      headers: {
+        'x-ca-seq': `${seq}`,
+        'x-ca-websocket_api_type': type,
+        ...addHeaders,
+      },
     });
 
-    return JSON.stringify({method, data, host, path, headers});
+    return JSON.stringify({
+      method,
+      body: JSON.stringify(data),
+      host,
+      path,
+      headers: Object.keys(headers)
+        .map(key => ({[key]: [headers[key]]}))
+        .reduce((a, b) => Object.assign(a, b), {}),
+    });
   };

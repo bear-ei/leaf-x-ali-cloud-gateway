@@ -56,7 +56,8 @@ export type Event =
   | 'error'
   | 'signUp'
   | 'signOut'
-  | 'heartbeat';
+  | 'heartbeat'
+  | 'reconnect';
 
 /**
  * The result of the socket API.
@@ -123,6 +124,16 @@ export interface EmitSocket {
  */
 export interface SendSocket {
   (message: string | Record<string, unknown>): void;
+}
+
+/**
+ * Handle other message.
+ *
+ * @param message The socket sends a message.
+ * @return void
+ */
+export interface HandleOtherMessage {
+  (message: unknown): void;
 }
 
 /**

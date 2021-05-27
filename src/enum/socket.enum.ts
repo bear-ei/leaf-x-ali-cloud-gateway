@@ -53,3 +53,23 @@ export enum CommandWord {
  * Socket command word string.
  */
 export type CommandWordString = 'RF' | 'OS' | 'CR' | 'RO' | 'HO' | 'HF' | 'NF';
+
+/**
+ * Enumerate the response event.
+ */
+export enum ResponseEvent {
+  /**
+   * Sign up event.
+   */
+  SIGN_UP = 'signUp',
+
+  /**
+   * Sign out event.
+   */
+  SIGN_OUT = 'signOut',
+}
+
+/**
+ * Enumerate the response event string.
+ */
+export type ResponseEventString = 'SIGN_UP' | 'SIGN_OUT';

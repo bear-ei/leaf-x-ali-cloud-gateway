@@ -64,11 +64,13 @@ socket.on('heartbeat', (data) => {
     console.info(data.success);
 });
 
+SOCKET.on('reconnect', (data: string) => {
+    console.info(data.success);
+});
+
 socket.send("https://www.leaf-x.app/");
 
 socket.close();
-
-socket.reconnect();
 ```
 
 ## React Native

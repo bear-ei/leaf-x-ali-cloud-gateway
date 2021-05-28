@@ -9,7 +9,7 @@ import {
 import {headers as globalHeaders, initGetRequestHeaders} from './headers';
 import {
   EmitSocket,
-  HandleOtherMessage,
+  HandleMessage,
   InitGetSocketRequestMessage,
   InitSocket,
   OnSocket,
@@ -22,7 +22,7 @@ export const initSocket: InitSocket = ({
   ...gatewayOptionsArgs
 }) => {
   const {
-    host,
+    host = 'localhost',
     protocol = 'ws',
     port = 8080,
     signUpPath,
@@ -36,8 +36,8 @@ export const initSocket: InitSocket = ({
   let heartTimer!: NodeJS.Timeout;
   let reconnectTimer!: NodeJS.Timeout;
   let socket!: WebSocket;
+  let heartbeatInterval!: number;
   let heartNumber = 0;
-  let signUpStatus = false;
 
   const getSocketRequestMessage =
     initGetSocketRequestMessage(gatewayOptionsArgs);
@@ -56,123 +56,142 @@ export const initSocket: InitSocket = ({
     }
   };
 
-  const signUp = () => {
-    if (!signUpStatus) {
-      const message = getSocketRequestMessage(signUpPath, {
-        protocol,
-        type: 'REGISTER',
-        method: 'POST',
-        host,
-        seq,
-      });
-
-      socket.send(message);
-    }
-  };
-
-  const signOut = () => {
-    if (signUpStatus) {
-      const message = getSocketRequestMessage(signOutPath, {
-        protocol,
-        type: 'UNREGISTER',
-        method: 'POST',
-        host,
-        seq,
-      });
-
-      socket.send(message);
-    }
-  };
-
-  const send: SendSocket = message => {
-    const data =
-      typeof message === 'string' ? message : JSON.stringify(message);
-
-    socket.send(data);
-  };
-
-  const handleOtherMessage: HandleOtherMessage = message => {
-    let data!: unknown;
-
-    try {
-      data = JSON.parse(message as string);
-    } catch (error) {
-      data = message;
-    }
-
-    const event = Object.freeze({
-      signUp: () => {
-        signUpStatus = true;
-
-        emit('signUp', {
-          success: true,
-          message: 'Gateway sign up is successful.',
-        });
-      },
-      signOut: () => {
-        signUpStatus = false;
-
-        emit('signOut', {
-          success: true,
-          message: 'Gateway sign out is successful.',
-        });
-
-        socket.close();
-      },
-    });
-
-    if (typeof data === 'object' && data !== null) {
-      const {status, body} = data as Record<string, unknown>;
-      const handleEvent = event[ResponseEvent[body as ResponseEventString]];
-
-      status === 200 && handleEvent ? handleEvent() : emit('error', data);
-    } else {
-      emit('message', data);
-    }
-  };
-
   return () => {
+    const handleMessage: HandleMessage = message => {
+      let data!: unknown;
+
+      try {
+        data = JSON.parse(message as string);
+      } catch (error) {
+        data = message;
+      }
+
+      const event = Object.freeze({
+        signUp: (sequence: string) => {
+          emit(
+            'signUp',
+            `The gateway with sequence ${sequence} is signed up successfully.`
+          );
+
+          heartTimer = setInterval(() => {
+            if (heartNumber % 2 === 0) {
+              send('H1');
+
+              heartNumber++;
+            } else {
+              console.info('Local heartbeat maintenance failed.');
+              reconnect();
+            }
+          }, heartbeatInterval);
+        },
+        signOut: (sequence: string) => {
+          emit(
+            'signOut',
+            `The gateway with sequence ${sequence} is signed out successfully.`
+          );
+        },
+      });
+
+      const objectData = typeof data === 'object' && data !== null;
+
+      if (objectData) {
+        const {status, body, header} = data as Record<string, unknown>;
+        const handleEvent = event[ResponseEvent[body as ResponseEventString]];
+
+        status === 200 && handleEvent
+          ? handleEvent((header as Record<string, string>)['x-ca-seq'])
+          : emit('error', data);
+      } else {
+        emit('message', data);
+      }
+    };
+
+    const reset = () => {
+      clearInterval(heartTimer);
+
+      heartNumber = 0;
+      heartbeatInterval = 0;
+    };
+
+    const send: SendSocket = (event, options = {}) => {
+      const {message = '', type, path} = options;
+
+      if (socket.readyState === socket.OPEN) {
+        const data =
+          typeof message === 'string' && message
+            ? message
+            : JSON.stringify(message);
+
+        const messageEvent = event === 'message';
+
+        if (messageEvent && !path) {
+          throw new Error('Missing send event path.');
+        }
+
+        const sendMessage = messageEvent
+          ? getSocketRequestMessage(path as string, {
+              protocol,
+              type,
+              method: 'POST',
+              data,
+              host,
+              seq,
+            })
+          : `${event}${message}`;
+
+        socket.send(sendMessage);
+      } else {
+        reconnect();
+      }
+    };
+
     const connect = () => {
-      seq++;
       socket = new WebSocket(`${protocol}://${host}:${port}`);
 
       onSocket();
     };
 
     const reconnect = () => {
+      console.info('onreconnect', socket.readyState);
       emit('reconnect', 'Try to re-establish the connection.');
-
       close();
       connect();
     };
 
     const close = () => {
-      if (socket.readyState === 1) {
-        signUpStatus ? signOut() : socket.close();
+      console.info('ex-close', socket.readyState);
+      if (socket.readyState === socket.OPEN) {
+        send('message', {path: signOutPath, type: 'UNREGISTER'});
+
+        socket.close();
+      } else {
+        reset();
       }
     };
 
     const onSocket = () => {
       socket.onopen = () => {
-        if (socket.readyState === 1) {
-          clearInterval(reconnectTimer);
+        console.info('onopen', socket.readyState);
+        if (socket.readyState === socket.OPEN) {
+          emit(
+            'open',
+            'The connection has been established and is ready for communication.'
+          );
 
-          socket.send(`RG#${deviceId}`);
+          seq++;
 
-          emit('open', {
-            success: true,
-            message:
-              'The connection has been established and is ready for communication.',
-          });
+          send('RG#', {message: deviceId});
         }
       };
 
       socket.onerror = error => {
-        if (socket.readyState === 3) {
-          reconnectTimer = setInterval(() => reconnect(), 10 * 1000);
-        }
-
+        console.info('onerror', socket.readyState);
         emit('error', error);
+        if (socket.readyState === socket.CLOSED) {
+          clearTimeout(reconnectTimer);
+
+          reconnectTimer = setTimeout(() => reconnect(), 3000);
+        }
       };
 
       socket.onmessage = messageEvent => {
@@ -182,31 +201,20 @@ export const initSocket: InitSocket = ({
           cr: reconnect,
           hf: reconnect,
           ro: (message: string): void => {
-            const [, , heartbeatInterval] = message.split('#');
+            const [, , heartbeatTime] = message.split('#');
 
-            heartTimer = setInterval(() => {
-              if (heartNumber % 2 === 0) {
-                heartNumber++;
-                socket.send('H1');
-              } else {
-                reconnect();
-              }
-            }, Number(heartbeatInterval));
+            heartbeatInterval = Number(heartbeatTime);
 
-            signUp();
+            send('message', {path: signUpPath, type: 'REGISTER'});
           },
           ho: () => {
-            heartNumber++;
+            emit('heartbeat', 'Maintaining a successful heartbeat.');
 
-            emit('heartbeat', {
-              success: true,
-              message: 'Maintaining a successful heartbeat.',
-            });
+            heartNumber++;
           },
           nf: (message: string): void => {
             emit('message', message.slice(3));
-
-            socket.send('NO');
+            send('NO');
           },
         });
 
@@ -214,24 +222,19 @@ export const initSocket: InitSocket = ({
         const signal = data?.slice(0, 2) as CommandWordString;
         const handEvent = event[CommandWord[signal]];
 
-        console.info(data);
+        console.info('onmessage', socket.readyState, data);
 
-        handEvent ? handEvent(data) : handleOtherMessage(data);
+        handEvent ? handEvent(data) : handleMessage(data);
       };
 
       socket.close = () => {
-        clearInterval(heartTimer);
-
-        heartNumber = 0;
-
-        emit('close', {
-          success: true,
-          message: 'Connection is closed.',
-        });
+        console.info('onclose', socket.readyState);
+        emit('close', 'Connection is closed.');
+        reset();
       };
     };
 
-    return {connect, reconnect, close, on, emit, send};
+    return {connect, reconnect, close, on, send};
   };
 };
 
@@ -241,6 +244,8 @@ const initGetSocketRequestMessage: InitGetSocketRequestMessage =
     const url = `${protocol}://${host}${path}`;
     const requestUrl = handleRequestUrl({url, params});
     const addHeaders = {} as Record<string, string>;
+    const body =
+      typeof data === 'object' && data !== null ? JSON.stringify(data) : data;
 
     for (const key of globalHeaders.keys()) {
       Object.assign(addHeaders, {[key]: globalHeaders.get(key)});
@@ -249,18 +254,20 @@ const initGetSocketRequestMessage: InitGetSocketRequestMessage =
     const headers = initGetRequestHeaders(options)({
       method,
       url: requestUrl,
-      data,
+      data: body,
       host,
       headers: {
+        ca_version: '1',
         'x-ca-seq': `${seq}`,
-        'x-ca-websocket_api_type': type,
+        ...(type ? {'x-ca-websocket_api_type': type} : undefined),
         ...addHeaders,
       },
     });
 
     return JSON.stringify({
+      isBase64: 0,
       method,
-      body: JSON.stringify(data),
+      body,
       host,
       path,
       headers: Object.keys(headers)

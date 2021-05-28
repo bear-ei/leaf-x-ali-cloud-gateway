@@ -84,11 +84,6 @@ export interface SocketResult {
   readonly on: OnSocket;
 
   /**
-   * Send socket event.
-   */
-  readonly emit: EmitSocket;
-
-  /**
    * Send socket message.
    */
   readonly send: SendSocket;
@@ -116,6 +111,12 @@ export interface EmitSocket {
   (event: Event, options: unknown): void;
 }
 
+export interface SendSocketOptions {
+  message?: string | Record<string, unknown>;
+  type?: SocketRequestOptions['type'];
+  path?: string;
+}
+
 /**
  * Send socket message.
  *
@@ -123,16 +124,16 @@ export interface EmitSocket {
  * @return void
  */
 export interface SendSocket {
-  (message: string | Record<string, unknown>): void;
+  (event: string, options?: SendSocketOptions): void;
 }
 
 /**
- * Handle other message.
+ * Handle message.
  *
  * @param message The socket sends a message.
  * @return void
  */
-export interface HandleOtherMessage {
+export interface HandleMessage {
   (message: unknown): void;
 }
 
@@ -174,7 +175,7 @@ export interface SocketRequestOptions extends FetchOptions {
   /**
    * Request type.
    */
-  type: 'UNREGISTER' | 'REGISTER';
+  type?: 'UNREGISTER' | 'REGISTER';
 
   /**
    * Socket protocol.

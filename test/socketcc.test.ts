@@ -42,6 +42,11 @@ SOCKET.on('open', (data: Record<string, unknown>) => {
 
 SOCKET.on('signUp', (data: Record<string, unknown>) => {
   console.info('signUp-on', data);
+  SOCKET.close();
+});
+
+SOCKET.on('send', (data: Record<string, unknown>) => {
+  console.info('send-on', data);
 });
 
 SOCKET.on('heartbeat', (data: Record<string, unknown>) => {
@@ -65,5 +70,8 @@ SOCKET.on('reconnect', (message: string) => {
 });
 
 SOCKET.on('error', (data: Record<string, unknown>) => {
+  console.info(data);
   console.info('error-on');
 });
+
+setInterval(() => {}, 5000);

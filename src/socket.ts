@@ -38,6 +38,7 @@ export const initSocket: InitSocket = ({
   let socket!: WebSocket;
   let heartbeatInterval!: number;
   let heartNumber = 0;
+  let online = false;
 
   const getSocketRequestMessage =
     initGetSocketRequestMessage(gatewayOptionsArgs);
@@ -68,23 +69,30 @@ export const initSocket: InitSocket = ({
 
       const event = Object.freeze({
         signUp: (sequence: string) => {
+          if (socket.readyState === socket.OPEN) {
+            heartTimer = setInterval(() => {
+              if (heartNumber % 2 === 0) {
+                send('H1');
+
+                heartNumber++;
+              } else {
+                reconnect();
+              }
+            }, heartbeatInterval);
+          }
+
+          online = true;
+
           emit(
             'signUp',
             `The gateway with sequence ${sequence} is signed up successfully.`
           );
-
-          heartTimer = setInterval(() => {
-            if (heartNumber % 2 === 0) {
-              send('H1');
-
-              heartNumber++;
-            } else {
-              console.info('Local heartbeat maintenance failed.');
-              reconnect();
-            }
-          }, heartbeatInterval);
         },
         signOut: (sequence: string) => {
+          online = false;
+
+          socket.close(1000);
+
           emit(
             'signOut',
             `The gateway with sequence ${sequence} is signed out successfully.`
@@ -109,6 +117,7 @@ export const initSocket: InitSocket = ({
     const reset = () => {
       clearInterval(heartTimer);
 
+      online = false;
       heartNumber = 0;
       heartbeatInterval = 0;
     };
@@ -140,8 +149,12 @@ export const initSocket: InitSocket = ({
           : `${event}${message}`;
 
         socket.send(sendMessage);
+
+        emit('send', message);
       } else {
         reconnect();
+
+        emit('error', {type: 'send', message});
       }
     };
 
@@ -152,18 +165,18 @@ export const initSocket: InitSocket = ({
     };
 
     const reconnect = () => {
-      console.info('onreconnect', socket.readyState);
       emit('reconnect', 'Try to re-establish the connection.');
       close();
       connect();
     };
 
     const close = () => {
-      console.info('ex-close', socket.readyState);
-      if (socket.readyState === socket.OPEN) {
-        send('message', {path: signOutPath, type: 'UNREGISTER'});
+      console.info(socket.readyState, online);
 
-        socket.close();
+      if (socket.readyState === socket.OPEN) {
+        online
+          ? send('message', {path: signOutPath, type: 'UNREGISTER'})
+          : socket.close(1000);
       } else {
         reset();
       }
@@ -171,27 +184,29 @@ export const initSocket: InitSocket = ({
 
     const onSocket = () => {
       socket.onopen = () => {
-        console.info('onopen', socket.readyState);
         if (socket.readyState === socket.OPEN) {
+          seq++;
+
+          send('RG#', {message: deviceId});
           emit(
             'open',
             'The connection has been established and is ready for communication.'
           );
-
-          seq++;
-
-          send('RG#', {message: deviceId});
         }
       };
 
       socket.onerror = error => {
-        console.info('onerror', socket.readyState);
-        emit('error', error);
-        if (socket.readyState === socket.CLOSED) {
+        const disconnect =
+          socket.readyState === socket.CLOSED ||
+          socket.readyState === socket.CLOSING;
+
+        if (disconnect) {
           clearTimeout(reconnectTimer);
 
           reconnectTimer = setTimeout(() => reconnect(), 3000);
         }
+
+        emit('error', error);
       };
 
       socket.onmessage = messageEvent => {
@@ -208,13 +223,13 @@ export const initSocket: InitSocket = ({
             send('message', {path: signUpPath, type: 'REGISTER'});
           },
           ho: () => {
-            emit('heartbeat', 'Maintaining a successful heartbeat.');
-
             heartNumber++;
+
+            emit('heartbeat', 'Maintaining a successful heartbeat.');
           },
           nf: (message: string): void => {
-            emit('message', message.slice(3));
             send('NO');
+            emit('message', message.slice(3));
           },
         });
 
@@ -222,15 +237,14 @@ export const initSocket: InitSocket = ({
         const signal = data?.slice(0, 2) as CommandWordString;
         const handEvent = event[CommandWord[signal]];
 
-        console.info('onmessage', socket.readyState, data);
+        console.info(signal);
 
         handEvent ? handEvent(data) : handleMessage(data);
       };
 
-      socket.close = () => {
-        console.info('onclose', socket.readyState);
-        emit('close', 'Connection is closed.');
+      socket.onclose = () => {
         reset();
+        emit('close', 'Close the connection successfully.');
       };
     };
 

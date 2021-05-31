@@ -31,8 +31,6 @@
 //           io.send('NF#OK.');
 //         }
 
-//         // const obj = JSON.parse(data as string);
-
 //         type Json = Record<
 //           string,
 //           Record<string, {headers: string[]; [key: string]: unknown}>
@@ -57,11 +55,23 @@
 //             'UNREGISTER';
 
 //         if (signUp) {
-//           return io.send(JSON.stringify({status: 200, body: 'SIGN_UP'}));
+//           return io.send(
+//             JSON.stringify({
+//               status: 200,
+//               body: 'SIGN_UP',
+//               header: {'x-ca-seq': '1'},
+//             })
+//           );
 //         }
 
 //         if (signOut) {
-//           return io.send(JSON.stringify({status: 200, body: 'SIGN_OUT'}));
+//           return io.send(
+//             JSON.stringify({
+//               status: 200,
+//               body: 'SIGN_OUT',
+//               header: {'x-ca-seq': '1'},
+//             })
+//           );
 //         }
 //       });
 //     });
@@ -71,27 +81,30 @@
 //       appSecret: 'MTIzNDQ1NQ==',
 //       socketOptions: {
 //         host: 'localhost',
-//         signOutPath: '',
-//         signUpPath: '',
+//         signOutPath: '/v4/mobile/guardians/sockets/signOutSockets',
+//         signUpPath: '/v4/mobile/guardians/sockets/signUpSockets',
 //       },
 //     })();
+
+//     SOCKET.connect();
 //   });
 
 //   it('should be socket connection ready', done => {
-//     SOCKET.connect();
-//     SOCKET.on('open', (data: Record<string, unknown>) => {
-//       console.info('open');
-//       assert(data.success);
+//     SOCKET.on('open', (success: string) => {
+//       console.info('open-test');
+
 //       assert(
-//         data.message ===
+//         success ===
 //           'The connection has been established and is ready for communication.'
 //       );
 //     });
 
-//     SOCKET.on('signUp', (data: Record<string, unknown>) => {
-//       console.info('signUp');
-//       assert(data.success);
-//       assert(data.message === 'Gateway sign up is successful.');
+//     SOCKET.on('signUp', (message: string) => {
+//       console.info('signUp-test');
+
+//       assert(
+//         message === 'The gateway with sequence 1 is signed up successfully.'
+//       );
 //     });
 
 //     setTimeout(() => {
@@ -100,19 +113,21 @@
 //   });
 
 //   it('should be socket heartbeat', done => {
-//     SOCKET.on('heartbeat', (data: Record<string, unknown>) => {
-//       console.info('heartbeat');
-//       assert(data.success);
-//       assert(data.message === 'Maintaining a successful heartbeat.');
+//     SOCKET.on('heartbeat', (message: string) => {
+//       console.info('heartbeat-test');
+
+//       assert(message === 'Maintaining a successful heartbeat.');
 //     });
 
 //     setTimeout(() => {
 //       done();
-//     }, 2000);
-//   }).timeout(3000);
+//     }, 3000);
+//   }).timeout(4000);
 
 //   it('should be socket message', done => {
 //     SOCKET.on('message', (message: string) => {
+//       console.info('message-test');
+
 //       assert(typeof message === 'string');
 //     });
 
@@ -124,8 +139,22 @@
 //   });
 
 //   it('should be socket reconnect', done => {
-//     SOCKET.on('open', (data: Record<string, unknown>) => {
-//       assert(data.success);
+//     SOCKET.on('reconnect', (message: string) => {
+//       console.info('reconnect-test');
+//       assert(message === 'Try to re-establish the connection.');
+//     });
+
+//     SOCKET.on('close', (message: string) => {
+//       console.info('close-test');
+//       assert(message === 'Connection is closed.');
+//     });
+
+//     SOCKET.on('signOut', (message: string) => {
+//       console.info('signOut-test');
+
+//       assert(
+//         message === 'The gateway with sequence 1 is signed out successfully.'
+//       );
 //     });
 
 //     SOCKET.send('OS');
@@ -135,40 +164,20 @@
 //     }, 100);
 //   });
 
-//   it('should be socket closed', done => {
-//     SOCKET.on('close', (data: Record<string, unknown>) => {
-//       console.info('close');
-//       assert(data.success);
-//       assert(data.message === 'Connection is closed.');
+//   it('should be socket error', done => {
+//     SOCKET.on('error', (data: Record<string, unknown>) => {
+//       console.info('error-test');
 
-//       SOCKET.send('233');
+//       assert(data.type === 'error');
 //     });
 
-//     SOCKET.on('signOut', (data: Record<string, unknown>) => {
-//       console.info('signOut');
-//       assert(data.success);
-//       assert(data.message === 'Gateway sign out is successful.');
-//     });
-
-//     SOCKET.close();
+//     MOCK_SERVER.simulate('error');
 
 //     setTimeout(() => {
+//       SOCKET.close();
 //       done();
 //     }, 100);
 //   });
-
-//   //   it('should be socket error', done => {
-//   //     SOCKET.on('error', (data: Record<string, unknown>) => {
-//   //       console.info('error');
-//   //       assert(data.type === 'error');
-//   //     });
-
-//   //     MOCK_SERVER.simulate('error');
-
-//   //     setTimeout(() => {
-//   //       done();
-//   //     }, 1000);
-//   //   });
 
 //   after(() => {
 //     MOCK_SERVER.stop();

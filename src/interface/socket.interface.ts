@@ -57,7 +57,8 @@ export type Event =
   | 'signUp'
   | 'signOut'
   | 'heartbeat'
-  | 'reconnect';
+  | 'reconnect'
+  | 'send';
 
 /**
  * The result of the socket API.

@@ -1,5 +1,5 @@
 import {Request} from './request.interface';
-import {Socket, SocketOptions} from './socket.interface';
+import {SocketOptions, SocketResult} from './socket.interface';
 
 /**
  * Gateway API options.
@@ -49,7 +49,12 @@ export interface GatewayResult {
   /**
    * Gateway socket.
    */
-  socket: Socket;
+  socket: SocketResult;
+
+  /**
+   * Gateway Request headers.
+   */
+  headers: Map<unknown, unknown>;
 }
 
 /**

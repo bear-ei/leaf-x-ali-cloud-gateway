@@ -50,15 +50,15 @@ export interface InitSocket {
  * Socket event.
  */
 export type Event =
-  | 'open'
-  | 'close'
-  | 'message'
-  | 'error'
-  | 'signUp'
-  | 'signOut'
-  | 'heartbeat'
-  | 'reconnect'
-  | 'send';
+  | 'OPEN'
+  | 'CLOSE'
+  | 'MESSAGE'
+  | 'ERROR'
+  | 'SIGN_UP'
+  | 'SIGN_OUT'
+  | 'HEARTBEAT'
+  | 'RECONNECT'
+  | 'SEND';
 
 /**
  * The result of the socket API.
@@ -68,11 +68,6 @@ export interface SocketResult {
    * connect socket.
    */
   readonly connect: () => void;
-
-  /**
-   * reconnect socket.
-   */
-  readonly reconnect: () => void;
 
   /**
    * close socket.

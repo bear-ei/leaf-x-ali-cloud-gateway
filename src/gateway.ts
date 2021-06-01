@@ -14,7 +14,7 @@ export const gateway: Gateway = ({
 
   return Object.freeze({
     request: initRequest(options),
-    socket: initSocket(options),
+    socket: initSocket(options)(),
     headers,
   });
 };

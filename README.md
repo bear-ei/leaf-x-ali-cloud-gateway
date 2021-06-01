@@ -21,51 +21,52 @@ Ali cloud gateway.
 ```typescript
 import {gateway} from '@leaf-x/ali-cloud-gateway';
 
-
 const {request,socket} = gateway({
   appKey: '2135455621223',
   appSecret: 'MjEzNTQ1NTYyMTIyMw==',
   stage: "RELEASE,
 });
 
-// request
-const result = await request('https://www.leaf-x.app/');
+// Request
+await request('https://www.leaf-x.app/').then(result=> console.info(result));
 
-console.info(result);
-
-// socket
+// Socket
 socket.connect();
 
-socket.on('open', (data) => {
-    console.info(data.success);
+socket.on('OPEN', (success: string) => {
+// do something
 });
 
-socket.on('close', (data) => {
-    console.info(data.success);
+socket.on('CLOSE', (success: string) => {
+// do something
 });
 
-socket.on('message', (message) => {
-    console.info(message);
+socket.on('MESSAGE', (message: string) => {
+ // do something
 });
 
-socket.on('error', (data) => {
-    console.info(data.success);
+socket.on('ERROR', (error: Record<string, unknown>) => {
+// do something
 });
 
-socket.on('signUp', (data) => {
-    console.info(data.success);
+socket.on('SIGN_UP', (success: string) => {
+// do something
 });
 
-socket.on('signOut', (data) => {
-    console.info(data.success);
+socket.on('SIGN_OUT', (success: string) => {
+// do something
 });
 
-socket.on('heartbeat', (data) => {
-    console.info(data.success);
+socket.on('HEARTBEAT', (success: string) => {
+// do something
 });
 
-SOCKET.on('reconnect', (data: string) => {
-    console.info(data.success);
+SOCKET.on('RECONNECT', (success: string) => {
+// do something
+});
+
+SOCKET.on('SEND', (data: Record<string, unknown>) => {
+// do something
 });
 
 socket.send("https://www.leaf-x.app/");

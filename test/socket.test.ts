@@ -1,9 +1,6 @@
 import * as assert from 'assert';
-import {Server, WebSocket} from 'mock-socket';
-import {SocketResult} from '../src/interface/socket.interface';
-import {initSocket} from '../src/socket';
-
-global.WebSocket = WebSocket;
+import {Server} from 'mock-socket';
+import {initSocket, SocketResult} from '../src/socket';
 
 let MOCK_SERVER!: Server;
 let SOCKET!: SocketResult;
@@ -152,7 +149,10 @@ describe('test/socket.test.ts', () => {
     try {
       SOCKET.send('MESSAGE');
     } catch (error) {
-      assert(error.message === 'Missing send event path.');
+      assert(
+        (error as Record<string, unknown>).message ===
+          'Missing send event path.'
+      );
     }
 
     setTimeout(() => {

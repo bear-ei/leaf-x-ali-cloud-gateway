@@ -1,6 +1,58 @@
-import {fetch, handleRequestUrl} from '@leaf-x/fetch';
+import fetch, {
+  FetchOptions,
+  handleRequestUrl,
+  HandleResponseResult,
+} from '@leaf-x/fetch';
+import {GatewayOptions} from './gateway';
 import {headers as globalHeaders, initGetRequestHeaders} from './headers';
-import {InitRequest} from './interface/request.interface';
+
+/**
+ * HTTP request method.
+ */
+export type HttpMethod =
+  | 'GET'
+  | 'POST'
+  | 'DELETE'
+  | 'HEAD'
+  | 'OPTIONS'
+  | 'PUT'
+  | 'PATCH'
+  | 'PURGE'
+  | 'LINK'
+  | 'UNLINK';
+
+/**
+ * The request options.
+ *
+ * @extends FetchOptions
+ */
+export interface RequestOptions extends FetchOptions {
+  /**
+   * Request host.
+   */
+  host?: string;
+}
+
+/**
+ * Request.
+ *
+ * @param url URL of the request.
+ * @param options RequestOptions
+ * @return Promise<HandleResponseResult>
+ */
+export interface Request {
+  (url: string, options?: RequestOptions): Promise<HandleResponseResult>;
+}
+
+/**
+ * The function that initialize the request.
+ *
+ * @param options GatewayOptions
+ * @return Request
+ */
+export interface InitRequest {
+  (options: GatewayOptions): Request;
+}
 
 export const initRequest: InitRequest =
   gatewayOptions =>

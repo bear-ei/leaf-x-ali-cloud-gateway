@@ -1,21 +1,286 @@
-import {handleRequestUrl} from '@leaf-x/fetch';
+import {FetchOptions, handleRequestUrl} from '@leaf-x/fetch';
 import * as uuid from 'uuid';
-import {
-  CommandWord,
-  CommandWordString,
-  ResponseEvent,
-  ResponseEventString,
-} from './enum/socket.enum';
+import {GatewayOptions} from './gateway';
 import {headers as globalHeaders, initGetRequestHeaders} from './headers';
-import {
-  EmitSocket,
-  HandleMessage,
-  InitGetSocketRequestMessage,
-  InitSocket,
-  OnSocket,
-  SendSocket,
-  SocketOptions,
-} from './interface/socket.interface';
+
+/**
+ * Enumerate the socket command word.
+ */
+export enum CommandWord {
+  /**
+   * The API gateway returns a registration failure response.
+   */
+  RF = 'rf',
+
+  /**
+   * The client request volume reaches the API gateway flow control threshold,
+   * the API gateway will send this command to the client, which requires the
+   * client to actively disconnect and actively reconnect. Active reconnection
+   * will not affect user experience. Otherwise, the API gateway will actively
+   * disconnect the long connection soon after.
+   */
+  OS = 'os',
+
+  /**
+   * When the connection reaches the long connection lifecycle, the API gateway
+   * will send this command to the client, requiring the client to actively
+   * disconnect and actively reconnect. Active reconnection will not affect user
+   * experience. Otherwise, the API gateway will actively disconnect the long
+   * connection soon after.
+   */
+  CR = 'cr',
+
+  /**
+   * When the DeviceId registration is successful, the API gateway returns
+   * success and the connection unique identifier and heartbeat interval
+   * configuration.
+   */
+  RO = 'ro',
+
+  /**
+   * The API gateway returns a heartbeat hold success response signal.
+   */
+  HO = 'ho',
+
+  /**
+   * The API gateway returns a heartbeat hold failure response, which requires
+   * the client to resend the registration request.
+   */
+  HF = 'hf',
+
+  /**
+   * The API gateway sends a downlink notification request.
+   */
+  NF = 'nf',
+}
+
+/**
+ * Socket command word string.
+ */
+export type CommandWordString = 'RF' | 'OS' | 'CR' | 'RO' | 'HO' | 'HF' | 'NF';
+
+/**
+ * Enumerate the response event.
+ */
+export enum ResponseEvent {
+  /**
+   * Sign up event.
+   */
+  SIGN_UP = 'signUp',
+
+  /**
+   * Sign out event.
+   */
+  SIGN_OUT = 'signOut',
+}
+
+/**
+ * Enumerate the response event string.
+ */
+export type ResponseEventString = 'SIGN_UP' | 'SIGN_OUT';
+
+/**
+ * Socket event.
+ */
+export type Event =
+  | 'OPEN'
+  | 'CLOSE'
+  | 'MESSAGE'
+  | 'ERROR'
+  | 'SIGN_UP'
+  | 'SIGN_OUT'
+  | 'HEARTBEAT'
+  | 'RECONNECT'
+  | 'SEND';
+
+/**
+ * The result of the socket API.
+ */
+export interface SocketResult {
+  /**
+   * connect socket.
+   */
+  readonly connect: () => void;
+
+  /**
+   * close socket.
+   */
+  readonly close: () => void;
+
+  /**
+   * Listen to socket events.
+   */
+  readonly on: OnSocket;
+
+  /**
+   * Send socket message.
+   */
+  readonly send: SendSocket;
+}
+
+/**
+ * Socket API.
+ *
+ * @return SocketResult
+ */
+export interface Socket {
+  (): SocketResult;
+}
+
+/**
+ * The function to initialize the socket.
+ *
+ * @param options GatewayOptions
+ * @return Socket
+ */
+export interface InitSocket {
+  (options: GatewayOptions): Socket;
+}
+
+/**
+ * Options for the socket API.
+ */
+export interface SocketOptions {
+  /**
+   * Socket sign up path.
+   */
+  signUpPath: string;
+
+  /**
+   * Socket sign out path.
+   */
+  signOutPath: string;
+
+  /**
+   * Socket host.
+   */
+  host: string;
+
+  /**
+   * Socket protocol. Default is ws
+   */
+  protocol?: 'wss' | 'ws';
+
+  /**
+   * Socket port. Default is 8080
+   */
+  port?: number;
+
+  /**
+   * The device ID of the connected socket.
+   */
+  deviceId?: string;
+}
+
+/**
+ * Listen to socket event.
+ *
+ * @param event Event
+ * @param callback Function
+ * @return void
+ */
+export interface OnSocket {
+  (event: Event, callback: Function): void;
+}
+
+/**
+ * Send socket event.
+ *
+ * @param event Event
+ * @param options unknown
+ * @return void
+ */
+export interface EmitSocket {
+  (event: Event, options: unknown): void;
+}
+
+/**
+ * Handle message.
+ *
+ * @param message The socket sends a message.
+ * @return void
+ */
+export interface HandleMessage {
+  (message: unknown): void;
+}
+
+/**
+ * Options for socket request.
+ *
+ * @extends FetchOptions
+ */
+export interface SocketRequestOptions extends FetchOptions {
+  /**
+   * Request host.
+   */
+  host: string;
+
+  /**
+   * Socket sequence.
+   */
+  seq: number;
+
+  /**
+   * Request type.
+   */
+  type?: 'UNREGISTER' | 'REGISTER';
+
+  /**
+   * Socket protocol.
+   */
+  protocol: 'ws' | 'wss';
+}
+
+/**
+ * Send socket options.
+ */
+export interface SendSocketOptions {
+  /**
+   * Socket message.
+   */
+  message?: string | Record<string, unknown>;
+
+  /**
+   * SocketRequestOptions['type']
+   */
+  type?: SocketRequestOptions['type'];
+
+  /**
+   * Request path.
+   */
+  path?: string;
+}
+
+/**
+ * Send socket message.
+ *
+ * @param message Send a message.
+ * @return void
+ */
+export interface SendSocket {
+  (event: string, options?: SendSocketOptions): void;
+}
+
+/**
+ * Get the socket request message.
+ *
+ * @param url URL of the request.
+ * @param options SocketRequestOptions
+ * @return string
+ */
+export interface GetSocketRequestMessage {
+  (url: string, options: SocketRequestOptions): string;
+}
+
+/**
+ * Initialize the function that gets the socket request message.
+ *
+ * @param options GatewayOptions
+ * @return GetSocketRequestMessage
+ */
+export interface InitGetSocketRequestMessage {
+  (options: GatewayOptions): GetSocketRequestMessage;
+}
 
 export const initSocket: InitSocket = ({
   socketOptions = {},
@@ -49,13 +314,8 @@ export const initSocket: InitSocket = ({
     events[event].push(callback);
   };
 
-  const emit: EmitSocket = (event, ...args) => {
-    if (events[event]) {
-      for (const item of events[event]) {
-        item.apply(item, args);
-      }
-    }
-  };
+  const emit: EmitSocket = (event, ...args) =>
+    events[event] && events[event].forEach(fun => fun.apply(fun, args));
 
   return () => {
     const handleMessage: HandleMessage = message => {

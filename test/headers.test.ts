@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import {getCanonicalHeaders, initGetRequestHeaders} from '../src/headers';
+import {handleCanonicalHeaders, initHandleRequestHeaders} from '../src/headers';
 
 describe('test/headers.test.ts', () => {
   it('should get the request headers', async () => {
-    const result = initGetRequestHeaders({
+    const result = initHandleRequestHeaders({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
       stage: 'RELEASE',
@@ -25,7 +25,7 @@ describe('test/headers.test.ts', () => {
   });
 
   it('should be a text data request headers', async () => {
-    const result = initGetRequestHeaders({
+    const result = initHandleRequestHeaders({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
       stage: 'RELEASE',
@@ -51,19 +51,16 @@ describe('test/headers.test.ts', () => {
   });
 
   it('should be obtained from the canonical header', async () => {
-    const result = getCanonicalHeaders(
-      {prefix: 'x-ca-'},
-      {
-        'x-ca-nonce': '3a9d60c9-1dfc-494c-ac56-6a995034c303',
-        'x-ca-timestamp': '1620702566222',
-        'x-ca-key': '1234455',
-        'x-ca-stage': 'RELEASE',
-        'content-type': 'application/json; charset=utf-8',
-        'content-md5': '',
-        accept: '*/*',
-        date: '',
-      }
-    );
+    const result = handleCanonicalHeaders('x-ca-', {
+      'x-ca-nonce': '3a9d60c9-1dfc-494c-ac56-6a995034c303',
+      'x-ca-timestamp': '1620702566222',
+      'x-ca-key': '1234455',
+      'x-ca-stage': 'RELEASE',
+      'content-type': 'application/json; charset=utf-8',
+      'content-md5': '',
+      accept: '*/*',
+      date: '',
+    });
 
     assert(typeof result === 'object');
     assert(

@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import {getToken} from '../src/token';
+import {handleToken} from './../src/token';
 
 describe('test/token.test.ts', () => {
   it('should get the request token', async () => {
-    const result = getToken({
+    const result = handleToken({
       secret: 'MTIz',
       method: 'GET',
       url: 'https://github.com/?test=test',

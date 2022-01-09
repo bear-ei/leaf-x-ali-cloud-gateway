@@ -1,10 +1,11 @@
 import {FetchOptions, handleRequestUrl} from '@leaf-x/fetch';
+import {Base64} from 'js-base64';
 import * as uuid from 'uuid';
 import {GatewayOptions} from './gateway';
-import {headers as globalHeaders, initGetRequestHeaders} from './headers';
+import {headers as globalHeaders, initHandleRequestHeaders} from './headers';
 
 /**
- * Enumerate the socket command word.
+ * Socket command word enumeration.
  */
 export enum CommandWord {
   /**
@@ -13,20 +14,20 @@ export enum CommandWord {
   RF = 'rf',
 
   /**
-   * The client request volume reaches the API gateway flow control threshold,
-   * the API gateway will send this command to the client, which requires the
-   * client to actively disconnect and actively reconnect. Active reconnection
-   * will not affect user experience. Otherwise, the API gateway will actively
-   * disconnect the long connection soon after.
+   * When the client request volume reaches the API gateway flow control
+   * threshold, the API gateway will send this command to the client, requiring
+   * the client to actively disconnect and actively reconnect. Active
+   * reconnection will not affect user experience. Otherwise, the API gateway
+   * will actively disconnect the long connection soon after.
    */
   OS = 'os',
 
   /**
    * When the connection reaches the long connection lifecycle, the API gateway
-   * will send this command to the client, requiring the client to actively
-   * disconnect and actively reconnect. Active reconnection will not affect user
-   * experience. Otherwise, the API gateway will actively disconnect the long
-   * connection soon after.
+   * will send this command to the client, which requires the client to actively
+   * disconnect and actively reconnect. Active reconnection will not affect the
+   * user experience. Otherwise, the API gateway will actively disconnect the
+   * long connection shortly afterwards.
    */
   CR = 'cr',
 
@@ -49,7 +50,7 @@ export enum CommandWord {
   HF = 'hf',
 
   /**
-   * The API gateway sends a downlink notification request.
+   * TThe API gateway sends a downlink notification request.
    */
   NF = 'nf',
 }
@@ -60,27 +61,20 @@ export enum CommandWord {
 export type CommandWordString = 'RF' | 'OS' | 'CR' | 'RO' | 'HO' | 'HF' | 'NF';
 
 /**
- * Enumerate the response event.
+ * Response event enumeration.
  */
 export enum ResponseEvent {
-  /**
-   * Sign up event.
-   */
   SIGN_UP = 'signUp',
-
-  /**
-   * Sign out event.
-   */
   SIGN_OUT = 'signOut',
 }
 
 /**
- * Enumerate the response event string.
+ * Response event string.
  */
 export type ResponseEventString = 'SIGN_UP' | 'SIGN_OUT';
 
 /**
- * Socket event.
+ * Listening to events.
  */
 export type Event =
   | 'OPEN'
@@ -94,134 +88,56 @@ export type Event =
   | 'SEND';
 
 /**
- * The result of the socket API.
- */
-export interface SocketResult {
-  /**
-   * connect socket.
-   */
-  readonly connect: () => void;
-
-  /**
-   * close socket.
-   */
-  readonly close: () => void;
-
-  /**
-   * Listen to socket events.
-   */
-  readonly on: OnSocket;
-
-  /**
-   * Send socket message.
-   */
-  readonly send: SendSocket;
-}
-
-/**
- * Socket API.
- *
- * @return SocketResult
- */
-export interface Socket {
-  (): SocketResult;
-}
-
-/**
- * The function to initialize the socket.
- *
- * @param options GatewayOptions
- * @return Socket
- */
-export interface InitSocket {
-  (options: GatewayOptions): Socket;
-}
-
-/**
- * Options for the socket API.
+ * API gateway socket options.
  */
 export interface SocketOptions {
   /**
-   * Socket sign up path.
+   * Sign up path.
    */
   signUpPath: string;
 
   /**
-   * Socket sign out path.
+   * Sign out path.
    */
   signOutPath: string;
 
   /**
-   * Socket host.
+   * API gateway host address.
    */
-  host: string;
+  host?: string;
 
   /**
-   * Socket protocol. Default is ws
+   * Socket protocol.
    */
   protocol?: 'wss' | 'ws';
 
   /**
-   * Socket port. Default is 8080
+   * API Gateway port.
    */
   port?: number;
 
   /**
-   * The device ID of the connected socket.
+   * Client device ID.
    */
   deviceId?: string;
 }
 
 /**
- * Listen to socket event.
- *
- * @param event Event
- * @param callback Function
- * @return void
- */
-export interface OnSocket {
-  (event: Event, callback: Function): void;
-}
-
-/**
- * Send socket event.
- *
- * @param event Event
- * @param options unknown
- * @return void
- */
-export interface EmitSocket {
-  (event: Event, options: unknown): void;
-}
-
-/**
- * Handle message.
- *
- * @param message The socket sends a message.
- * @return void
- */
-export interface HandleMessage {
-  (message: unknown): void;
-}
-
-/**
- * Options for socket request.
- *
- * @extends FetchOptions
+ * Socket request option.
  */
 export interface SocketRequestOptions extends FetchOptions {
   /**
-   * Request host.
+   * API gateway host address.
    */
   host: string;
 
   /**
-   * Socket sequence.
+   * Request sequence.
    */
   seq: number;
 
   /**
-   * Request type.
+   * Request type. UNREGISTER is sign oul, REGISTER is sign up.
    */
   type?: 'UNREGISTER' | 'REGISTER';
 
@@ -231,73 +147,30 @@ export interface SocketRequestOptions extends FetchOptions {
   protocol: 'ws' | 'wss';
 }
 
-/**
- * Send socket options.
- */
 export interface SendSocketOptions {
   /**
-   * Socket message.
+   * Send a message.
    */
   message?: string | Record<string, unknown>;
 
   /**
-   * SocketRequestOptions['type']
+   * Request type. UNREGISTER is sign oul, REGISTER is sign up.
    */
   type?: SocketRequestOptions['type'];
 
   /**
-   * Request path.
+   * Send message path.
    */
   path?: string;
 }
 
 /**
- * Send socket message.
+ * Socket.
  *
- * @param message Send a message.
- * @return void
+ * @param options API gateway options.
  */
-export interface SendSocket {
-  (event: string, options?: SendSocketOptions): void;
-}
-
-/**
- * Get the socket request message.
- *
- * @param url URL of the request.
- * @param options SocketRequestOptions
- * @return string
- */
-export interface GetSocketRequestMessage {
-  (url: string, options: SocketRequestOptions): string;
-}
-
-/**
- * Initialize the function that gets the socket request message.
- *
- * @param options GatewayOptions
- * @return GetSocketRequestMessage
- */
-export interface InitGetSocketRequestMessage {
-  (options: GatewayOptions): GetSocketRequestMessage;
-}
-
-export const initSocket: InitSocket = ({
-  socketOptions = {},
-  ...gatewayOptionsArgs
-}) => {
-  const {
-    host = 'localhost',
-    protocol = 'ws',
-    port = 8080,
-    signUpPath,
-    signOutPath,
-    deviceId = `${uuid.v4().replace(new RegExp('-', 'g'), '')}@${
-      gatewayOptionsArgs.appKey
-    }`,
-  } = socketOptions as SocketOptions;
-
-  let socket!: WebSocket;
+const socket = ({socketOptions, ...gatewayOptionsArgs}: GatewayOptions) => {
+  let webSocket!: WebSocket;
   let seq = -1;
   let heartTimer!: NodeJS.Timeout;
   let reconnectTimer!: NodeJS.Timeout;
@@ -305,242 +178,281 @@ export const initSocket: InitSocket = ({
   let heartNumber = 0;
   let online = false;
 
-  const getSocketRequestMessage =
-    initGetSocketRequestMessage(gatewayOptionsArgs);
+  const {
+    host = 'localhost',
+    protocol = 'ws',
+    port = 8080,
+    signUpPath = '',
+    signOutPath = '',
+    deviceId = `${uuid.v4().replace(/-/g, '')}@${gatewayOptionsArgs.appKey}`,
+  } = socketOptions ?? {};
+
+  const socketRequestMessage =
+    initHandleSocketRequestMessage(gatewayOptionsArgs);
 
   const events = {} as Record<string, Function[]>;
-  const on: OnSocket = (event, callback) => {
+  const on = (event: Event, fun: Function) => {
     events[event] = events[event] ?? [];
-    events[event].push(callback);
+    events[event].push(fun);
   };
 
-  const emit: EmitSocket = (event, ...args) =>
+  const emit = (event: Event, ...args: unknown[]) =>
     events[event] && events[event].forEach(fun => fun.apply(fun, args));
 
-  return () => {
-    const handleMessage: HandleMessage = message => {
-      let data!: unknown;
+  const handleMessage = (message: unknown) => {
+    let data!: unknown;
 
-      try {
-        data = JSON.parse(message as string);
-      } catch (error) {
-        data = message;
-      }
-
-      const event = Object.freeze({
-        signUp: (sequence: string) => {
-          if (socket.readyState === socket.OPEN) {
-            heartTimer = setInterval(() => {
-              if (heartNumber % 2 === 0) {
-                send('H1');
-
-                heartNumber++;
-              } else {
-                reconnect();
-              }
-            }, heartbeatInterval);
-          }
-
-          online = true;
-
-          emit(
-            'SIGN_UP',
-            `The gateway with sequence ${sequence} is signed up successfully.`
-          );
-        },
-        signOut: (sequence: string) => {
-          online = false;
-          socket.close(1000);
-
-          emit(
-            'SIGN_OUT',
-            `The gateway with sequence ${sequence} is signed out successfully.`
-          );
-        },
-      });
-
-      const isObject = typeof data === 'object' && data !== null;
-
-      if (isObject) {
-        const {status, body, header} = data as Record<string, unknown>;
-        const handleEvent = event[ResponseEvent[body as ResponseEventString]];
-
-        status === 200 && handleEvent
-          ? handleEvent((header as Record<string, string>)['x-ca-seq'])
-          : emit('ERROR', data);
-      } else {
-        emit('MESSAGE', data);
-      }
-    };
-
-    const reset = () => {
-      clearInterval(heartTimer);
-      clearTimeout(reconnectTimer);
-
-      online = false;
-      heartNumber = 0;
-      heartbeatInterval = 0;
-    };
-
-    const send: SendSocket = (event, options = {}) => {
-      const {message = '', type, path} = options;
-
-      if (socket.readyState === socket.OPEN) {
-        const data =
-          typeof message === 'string' && message
-            ? message
-            : JSON.stringify(message);
-
-        const messageEvent = event === 'MESSAGE';
-
-        if (messageEvent && !path) {
-          throw new Error('Missing send event path.');
-        }
-
-        const sendMessage = messageEvent
-          ? getSocketRequestMessage(path as string, {
-              protocol,
-              type,
-              method: 'POST',
-              data,
-              host,
-              seq,
-            })
-          : `${event}${message}`;
-
-        socket.send(sendMessage);
-
-        emit('SEND', sendMessage);
-      } else {
-        reconnect();
-
-        emit('ERROR', {type: 'send', message});
-      }
-    };
-
-    const connect = () => {
-      socket = new WebSocket(`${protocol}://${host}:${port}`);
-
-      onSocket();
-    };
-
-    const reconnect = () => {
-      emit('RECONNECT', 'Try to re-establish the connection.');
-      close();
-      connect();
-    };
-
-    const close = () => {
-      if (socket.readyState === socket.OPEN) {
-        online
-          ? send('MESSAGE', {path: signOutPath, type: 'UNREGISTER'})
-          : socket.close(1000);
-      }
-
-      reset();
-    };
-
-    const onSocket = () => {
-      socket.onopen = () => {
-        if (socket.readyState === socket.OPEN) {
-          seq++;
-
-          send('RG#', {message: deviceId});
-          emit(
-            'OPEN',
-            'The connection has been established and is ready for communication.'
-          );
-        }
-      };
-
-      socket.onerror = error => {
-        const isDisconnect =
-          socket.readyState === socket.CLOSED ||
-          socket.readyState === socket.CLOSING;
-
-        if (isDisconnect) {
-          clearTimeout(reconnectTimer);
-
-          reconnectTimer = setTimeout(() => reconnect(), 3000);
-        }
-
-        emit('ERROR', error);
-      };
-
-      socket.onmessage = messageEvent => {
-        const event = Object.freeze({
-          rf: reconnect,
-          os: reconnect,
-          cr: reconnect,
-          hf: reconnect,
-          ro: (message: string): void => {
-            const [, , heartbeatTime] = message.split('#');
-
-            heartbeatInterval = Number(heartbeatTime);
-
-            send('MESSAGE', {path: signUpPath, type: 'REGISTER'});
-          },
-          ho: () => {
-            heartNumber++;
-
-            emit('HEARTBEAT', 'Maintaining a successful heartbeat.');
-          },
-          nf: (message: string): void => {
-            send('NO');
-            emit('MESSAGE', message.slice(3));
-          },
-        });
-
-        const data = messageEvent.data;
-        const signal = data?.slice(0, 2) as CommandWordString;
-        const handEvent = event[CommandWord[signal]];
-
-        handEvent ? handEvent(data) : handleMessage(data);
-      };
-
-      socket.onclose = () => {
-        emit('CLOSE', 'Close the connection successfully.');
-      };
-    };
-
-    return {connect, close, on, send};
-  };
-};
-
-const initGetSocketRequestMessage: InitGetSocketRequestMessage =
-  options =>
-  (path, {type, protocol, seq, method, data = {}, host, params = {}}) => {
-    const url = `${protocol}://${host}${path}`;
-    const requestUrl = handleRequestUrl({url, params});
-    const addHeaders = {} as Record<string, string>;
-    const body =
-      typeof data === 'object' && data !== null ? JSON.stringify(data) : data;
-
-    for (const key of globalHeaders.keys()) {
-      Object.assign(addHeaders, {[key]: globalHeaders.get(key)});
+    try {
+      data = JSON.parse(message as string);
+    } catch (error) {
+      data = message;
     }
 
-    const headers = initGetRequestHeaders(options)({
-      method,
-      url: requestUrl,
-      data: body,
-      host,
-      headers: {
-        ca_version: '1',
-        'x-ca-seq': `${seq}`,
-        ...(type ? {'x-ca-websocket_api_type': type} : undefined),
-        ...addHeaders,
+    const event = Object.freeze({
+      signUp: (sequence: string) => {
+        if (webSocket.readyState === webSocket.OPEN) {
+          heartTimer = setInterval(() => {
+            if (heartNumber % 2 === 0) {
+              send('H1');
+
+              heartNumber++;
+            } else {
+              reconnect();
+            }
+          }, heartbeatInterval);
+        }
+
+        online = true;
+
+        emit(
+          'SIGN_UP',
+          `The gateway with sequence ${sequence} is signed up successfully.`
+        );
+      },
+      signOut: (sequence: string) => {
+        online = false;
+        webSocket.close(1000);
+
+        emit(
+          'SIGN_OUT',
+          `The gateway with sequence ${sequence} is signed out successfully.`
+        );
       },
     });
 
-    return JSON.stringify({
-      isBase64: 0,
-      method,
-      body,
-      host,
-      path,
-      headers: Object.keys(headers)
-        .map(key => ({[key]: [headers[key]]}))
-        .reduce((a, b) => Object.assign(a, b), {}),
-    });
+    const isObject = typeof data === 'object' && data !== null;
+
+    if (isObject) {
+      const {status, body, header} = data as Record<string, unknown>;
+      const handleEvent = event[ResponseEvent[body as ResponseEventString]];
+
+      status === 200 && handleEvent
+        ? handleEvent((header as Record<string, string>)['x-ca-seq'])
+        : emit('ERROR', data);
+    } else {
+      emit('MESSAGE', data);
+    }
   };
+
+  const reset = () => {
+    clearInterval(heartTimer);
+    clearTimeout(reconnectTimer);
+
+    online = false;
+    heartNumber = 0;
+    heartbeatInterval = 0;
+  };
+
+  const send = (event: string, options: SendSocketOptions = {}) => {
+    const {message = '', type, path = ''} = options;
+    const execSend = () => {
+      const data =
+        typeof message === 'string' && message
+          ? message
+          : JSON.stringify(message);
+
+      const messageEvent = event === 'MESSAGE';
+
+      if (messageEvent && !path) {
+        throw new Error('Missing send event path.');
+      }
+
+      const sendMessage = messageEvent
+        ? socketRequestMessage(path, {
+            protocol,
+            type,
+            method: 'POST',
+            data,
+            host,
+            seq,
+          })
+        : `${event}${message}`;
+
+      webSocket.send(sendMessage);
+
+      emit('SEND', sendMessage);
+    };
+
+    const execReconnect = () => {
+      reconnect();
+
+      emit('ERROR', {type: 'send', message});
+    };
+
+    webSocket.readyState === webSocket.OPEN ? execSend() : execReconnect();
+  };
+
+  const connect = () => {
+    webSocket = new WebSocket(`${protocol}://${host}:${port}`);
+
+    onSocket();
+  };
+
+  const reconnect = () => {
+    emit('RECONNECT', 'Try to re-establish the connection.');
+    close();
+    connect();
+  };
+
+  const close = () => {
+    if (webSocket.readyState === webSocket.OPEN) {
+      online
+        ? send('MESSAGE', {path: signOutPath, type: 'UNREGISTER'})
+        : webSocket.close(1000);
+    }
+
+    reset();
+  };
+
+  const onSocket = () => {
+    webSocket.onopen = () => {
+      if (webSocket.readyState === webSocket.OPEN) {
+        seq++;
+
+        send('RG#', {message: deviceId});
+        emit(
+          'OPEN',
+          'The connection has been established and is ready for communication.'
+        );
+      }
+    };
+
+    webSocket.onerror = error => {
+      const isDisconnect =
+        webSocket.readyState === webSocket.CLOSED ||
+        webSocket.readyState === webSocket.CLOSING;
+
+      if (isDisconnect) {
+        clearTimeout(reconnectTimer);
+
+        reconnectTimer = setTimeout(() => reconnect(), 3000);
+      }
+
+      emit('ERROR', error);
+    };
+
+    webSocket.onmessage = messageEvent => {
+      const event = Object.freeze({
+        rf: reconnect,
+        os: reconnect,
+        cr: reconnect,
+        hf: reconnect,
+        ro: (message: string) => {
+          const [, , heartbeatTime] = message.split('#');
+
+          heartbeatInterval = Number(heartbeatTime);
+
+          send('MESSAGE', {path: signUpPath, type: 'REGISTER'});
+        },
+        ho: () => {
+          heartNumber++;
+
+          emit('HEARTBEAT', 'Maintaining a successful heartbeat.');
+        },
+        nf: (message: string) => {
+          send('NO');
+          emit('MESSAGE', message.slice(3));
+        },
+      });
+
+      const data = messageEvent.data;
+      const signal = data?.slice(0, 2) as CommandWordString;
+      const handEvent = event[CommandWord[signal]];
+
+      handEvent ? handEvent(data) : handleMessage(data);
+    };
+
+    webSocket.onclose = () => {
+      emit('CLOSE', 'Close the connection successfully.');
+    };
+  };
+
+  return {connect, close, on, send};
+};
+
+/**
+ *  The function to initialize the socket.
+ *
+ * @param options API gateway options.
+ */
+export const initSocket = (options: GatewayOptions) => () => socket(options);
+
+/**
+ * Handle socket request messages.
+ *
+ * @param path Request path.
+ * @param socketRequestOptions Socket request option.
+ * @param options API gateway options.
+ */
+const handleSocketRequestMessage = (
+  path: string,
+  {type, protocol, seq, method, data, host, params = {}}: SocketRequestOptions,
+  options: GatewayOptions
+) => {
+  const url = `${protocol}://${host}${path}`;
+  const requestUrl = handleRequestUrl(url, {params});
+  const addHeaders = {} as Record<string, string>;
+  const body =
+    typeof data === 'object' && data !== null ? JSON.stringify(data) : data;
+
+  for (const key of globalHeaders.keys()) {
+    Object.assign(addHeaders, {[key]: globalHeaders.get(key)});
+  }
+
+  const handleRequestHeaders = initHandleRequestHeaders(options);
+  const headers = handleRequestHeaders({
+    method,
+    url: requestUrl,
+    data: body,
+    host,
+    headers: {
+      ca_version: '1',
+      'x-ca-seq': `${seq}`,
+      ...(type ? {'x-ca-websocket_api_type': type} : undefined),
+      ...addHeaders,
+    },
+  });
+
+  return JSON.stringify({
+    isBase64: 1,
+    method,
+    body: body ? Base64.encode(body) : body,
+    host,
+    path,
+    headers: Object.keys(headers)
+      .map(key => ({
+        [key]: [headers[key as keyof typeof headers]],
+      }))
+      .reduce((a, b) => Object.assign(a, b), {}),
+  });
+};
+
+/**
+ * Initialize the function that handles socket request messages.
+ *
+ * @param gatewayOptions API gateway options.
+ */
+const initHandleSocketRequestMessage =
+  (gatewayOptions: GatewayOptions) =>
+  (path: string, options: SocketRequestOptions) =>
+    handleSocketRequestMessage(path, options, gatewayOptions);

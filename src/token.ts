@@ -1,9 +1,9 @@
 import * as crypto from 'crypto';
-import {getCanonicalHeaders} from './headers';
+import {handleCanonicalHeaders} from './headers';
 import {HttpMethod} from './request';
 
 /**
- * The options to sign.
+ * Signature options.
  */
 export interface SignOptions {
   /**
@@ -12,127 +12,80 @@ export interface SignOptions {
   signString: string;
 
   /**
-   * Gateway application secret.
+   * API gateway access key.
    */
   secret: string;
+}
+
+/**
+ * Handle signature string options.
+ */
+export interface HandleSignStringOptions {
+  /**
+   * HTTP request method.
+   */
+  method: HttpMethod;
+
+  /**
+   * Request URL.
+   */
+  url: string;
+
+  /**
+   * Request headers information.
+   */
+  headers: Record<string, string>;
+}
+
+/**
+ * Handle the request token options.
+ */
+export interface HandleTokenOptionsOptions {
+  /**
+   * API gateway access key.
+   */
+  secret: string;
+
+  /**
+   * HTTP request method.
+   */
+  method: HttpMethod;
+
+  /**
+   * Request URL.
+   */
+  url: string;
+
+  /**
+   * Request headers information.
+   */
+  headers: Record<string, string>;
 }
 
 /**
  * Signature.
  *
- * @param options SignOptions
- * @return string
+ * @param options Signature options.
  */
-export interface Sign {
-  (options: SignOptions): string;
-}
-
-/**
- * The options to get the signature string.
- */
-export interface GetSignStringOptions {
-  /**
-   * HTTP request method.
-   */
-  method: HttpMethod;
-
-  /**
-   * URL of the request.
-   */
-  url: string;
-
-  /**
-   * Request headers.
-   */
-  headers: Record<string, string>;
-}
-
-/**
- * Get the result of the signature string.
- */
-export interface GetSignStringResult {
-  /**
-   * Canonical of request header key string.
-   */
-  canonicalHeadersKeysString: string;
-
-  /**
-   * Signature string.
-   */
-  signString: string;
-}
-
-/**
- * Get the signature string.
- *
- * @param options GetSignStringOptions
- * @return GetSignStringResult
- */
-export interface GetSignString {
-  (options: GetSignStringOptions): GetSignStringResult;
-}
-
-/**
- * The options to get the request token.
- */
-export interface GetTokenOptions {
-  /**
-   * Gateway application secret.
-   */
-  secret: string;
-
-  /**
-   * HTTP request method.
-   */
-  method: HttpMethod;
-
-  /**
-   * URL of the request.
-   */
-  url: string;
-
-  /**
-   * Request headers.
-   */
-  headers: Record<string, string>;
-}
-
-/**
- * Get the result of the request token.
- */
-export interface GetTokenResult {
-  /**
-   * Canonical of request header key string.
-   */
-  canonicalHeadersKeysString: string;
-
-  /**
-   * Request a signature.
-   */
-  sign: string;
-}
-
-/**
- * Get the request token.
- *
- * @param options GetTokenOptions
- * @return GetTokenResult
- */
-export interface GetToken {
-  (options: GetTokenOptions): GetTokenResult;
-}
-
-const sign: Sign = ({secret, signString}) =>
+const sign = ({secret, signString}: SignOptions) =>
   crypto
     .createHmac('sha256', secret)
     .update(signString, 'utf8')
     .digest('base64');
 
-const getSignString: GetSignString = ({method, url, headers}) => {
+/**
+ * Handle signature strings.
+ *
+ * @param options Handle signature string options.
+ */
+const handleSignString = ({method, url, headers}: HandleSignStringOptions) => {
   const {searchParams, pathname} = new URL(url);
   const queryParams = {} as Record<string, unknown>;
   const {canonicalHeadersKeysString, canonicalHeadersString} =
-    getCanonicalHeaders({prefix: 'x-ca-'}, headers);
+    handleCanonicalHeaders(
+      /** Canonical request headers prefix. */ 'x-ca-',
+      headers
+    );
 
   for (const key of searchParams.keys()) {
     Object.assign(queryParams, {[key]: searchParams.get(key)});
@@ -157,8 +110,13 @@ const getSignString: GetSignString = ({method, url, headers}) => {
   };
 };
 
-export const getToken: GetToken = ({secret, ...args}) => {
-  const {canonicalHeadersKeysString, signString} = getSignString(args);
+/**
+ * Handle the request token.
+ *
+ * @param options Handle the request token options.
+ */
+export const handleToken = ({secret, ...args}: HandleTokenOptionsOptions) => {
+  const {canonicalHeadersKeysString, signString} = handleSignString(args);
 
   return {
     canonicalHeadersKeysString,

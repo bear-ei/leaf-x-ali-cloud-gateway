@@ -1,80 +1,54 @@
 import {headers} from './headers';
-import {initRequest, Request} from './request';
-import {initSocket, SocketOptions, SocketResult} from './socket';
+import {initRequest} from './request';
+import {initSocket, SocketOptions} from './socket';
 
 /**
- * Gateway API options.
+ * API gateway options.
  */
 export interface GatewayOptions {
   /**
-   * Gateway application key.
+   * Authorized application key.
    */
   appKey: string;
 
   /**
-   * Gateway application secret.
+   * Authorized application secret key.
    */
   appSecret: string;
 
   /**
-   * Accesses the API gateway environment. default is RELEASE.
+   * API gateway request environment, the default is RELEASE.
    */
   stage?: 'RELEASE' | 'PRE' | 'TEST';
 
   /**
-   * Set the default request headers.
+   * API gateway request header information.
    */
   headers?: Record<string, string>;
 
   /**
-   * Set the request timeout in milliseconds. The default timeout is 3000
-   * milliseconds.
+   * API gateway request timeout time, the default is 3000 milliseconds.
    */
   timeout?: number;
 
   /**
-   * Socket options.
+   * API gateway socket options.
    */
   socketOptions?: SocketOptions;
 }
 
 /**
- * Result of the Gateway API.
- */
-export interface GatewayResult {
-  /**
-   * Gateway request.
-   */
-  request: Request;
-
-  /**
-   * Gateway socket.
-   */
-  socket: SocketResult;
-
-  /**
-   * Gateway Request headers.
-   */
-  headers: Map<unknown, unknown>;
-}
-
-/**
- * Gateway API.
+ * API gateway.
  *
- * @param options GatewayOptions
- * @return InitGatewayResult
+ * @param options API gateway options.
  */
-export interface Gateway {
-  (options: GatewayOptions): GatewayResult;
-}
-
-export const gateway: Gateway = ({
+export const gateway = ({
   appKey,
   appSecret,
   stage = 'RELEASE',
   timeout = 3000,
   ...args
-}) => {
+}: GatewayOptions) => {
   const options = {appKey, appSecret, stage, timeout, ...args};
 
   return Object.freeze({

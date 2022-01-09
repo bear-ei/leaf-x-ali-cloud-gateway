@@ -3,146 +3,91 @@ import * as crypto from 'crypto';
 import * as uuid from 'uuid';
 import {GatewayOptions} from './gateway';
 import {HttpMethod} from './request';
-import {getToken} from './token';
+import {handleToken} from './token';
 
 /**
- * Get options for the request headers.
- *
- * @extends FetchOptions
+ * Handle headers options.
  */
-export interface GetHeadersOptions extends FetchOptions {
+export interface HandleHeadersOptions extends FetchOptions {
   /**
-   * Request host.
+   *  Request API gateway host address.
    */
   host?: string;
 }
 
 /**
- * Get the headers.
- *
- * @param options GetHeadersOptions
- * @return Record<string, string>
+ * Handle request headers options.
  */
-export interface GetHeaders {
-  (options: GetHeadersOptions): Record<string, string>;
-}
-
-/**
- * Initialize the function that gets the headers.
- *
- * @param options GatewayOptions
- * @return GetHeaders
- */
-export interface InitGetHeaders {
-  (options: GatewayOptions): GetHeaders;
-}
-
-/**
- * Get options for the canonical request headers.
- */
-export interface GetCanonicalHeadersOptions {
+export interface HandleRequestHeadersOptions extends FetchOptions {
   /**
-   * Canonical request headers prefix.
-   */
-  prefix: string;
-}
-
-/**
- * Get the result of the canonical request headers.
- */
-export interface GetCanonicalHeadersResult {
-  /**
-   * Canonical request headers key string.
-   */
-  canonicalHeadersKeysString: string;
-
-  /**
-   * Canonical request headers string.
-   */
-  canonicalHeadersString: string;
-}
-
-/**
- * Get the canonical request headers.
- *
- * @param options GetCanonicalHeadersOptions
- * @param headers Request headers.
- * @return GetCanonicalHeadersResult
- */
-export interface GetCanonicalHeaders {
-  (
-    options: GetCanonicalHeadersOptions,
-    headers: Record<string, string>
-  ): GetCanonicalHeadersResult;
-}
-
-/**
- * Get options for the request headers.
- *
- * @extends FetchOptions
- */
-export interface GetRequestHeadersOptions extends FetchOptions {
-  /**
-   * URL of the request.
+   * Request URL.
    */
   url: string;
 
   /**
-   * Request host.
+   *  Request API gateway host address.
    */
   host?: string;
 }
 
 /**
- * Get the request headers.
- *
- * @param options GetRequestHeadersOptions
- * @return Record<string, string>
+ * Set the global request headers information.
  */
-export interface GetRequestHeaders {
-  (options: GetRequestHeadersOptions): Record<string, string>;
-}
+const HEADERS = new Map();
 
 /**
- * Initialize the function that gets the request headers.
+ * Handle headers information.
  *
- * @param options GatewayOptions
- * @return GetRequestHeaders
+ * @param options Handle request headers options.
+ * @param gatewayOptions API gateway options.
  */
-export interface InitGetRequestHeaders {
-  (options: GatewayOptions): GetRequestHeaders;
-}
+const handleHeaders = (
+  {headers, data, host}: HandleHeadersOptions,
+  {appKey, stage, headers: defaultHeaders}: GatewayOptions
+) => {
+  const relHeaders = headers as Record<string, string>;
+  const isJson = typeof data === 'object' && data !== null;
+  const relData = isJson ? JSON.stringify(data) : data?.toString();
 
-const HEADERS = new Map();
-const initGetHeaders: InitGetHeaders =
-  ({appKey, stage, headers: defaultHeaders}) =>
-  ({headers, data, host}) => {
-    const isJson = typeof data === 'object' && data !== null;
-    const contentMD5 = data
-      ? crypto
-          .createHash('md5')
-          .update((isJson ? JSON.stringify(data) : `${data}`) as string)
-          .digest('base64')
-      : '';
+  const contentMD5 = relData
+    ? crypto.createHash('md5').update(relData).digest('base64')
+    : '';
 
-    return {
-      'x-ca-nonce': uuid.v4(),
-      'x-ca-timestamp': `${Date.now()}`,
-      'x-ca-key': appKey,
-      'x-ca-stage': stage as string,
-      'content-type':
-        (headers as Record<string, string>)?.['content-type'] ??
-        'application/json; charset=utf-8',
-      'content-md5': contentMD5,
-      accept: (headers as Record<string, string>)?.accept ?? '*/*',
-      date: '',
-      ...(host ? {host} : undefined),
-      ...defaultHeaders,
-      ...(headers as Record<string, string>),
-    };
+  return {
+    'x-ca-nonce': uuid.v4(),
+    'x-ca-timestamp': `${Date.now()}`,
+    'x-ca-key': appKey,
+    'x-ca-stage': stage as string,
+    'content-type':
+      relHeaders?.['content-type'] ?? 'application/json; charset=utf-8',
+    'content-md5': contentMD5,
+    accept: relHeaders?.accept ?? '*/*',
+    date: '',
+    ...(host ? {host} : undefined),
+    ...defaultHeaders,
+    ...relHeaders,
   };
+};
 
-export const getCanonicalHeaders: GetCanonicalHeaders = ({prefix}, headers) => {
+/**
+ * Initialize the function that handle the headers.
+ *
+ * @param gatewayOptions API gateway options.
+ */
+const initHandleHeaders =
+  (gatewayOptions: GatewayOptions) => (options: HandleHeadersOptions) =>
+    handleHeaders(options, gatewayOptions);
+
+/**
+ * Handle canonical request headers.
+ *
+ * @param prefix Canonical request headers prefix.
+ * @param headers Request headers information.
+ */
+export const handleCanonicalHeaders = (
+  prefix: string,
+  headers: Record<string, string>
+) => {
   const canonicalHeadersKeys = Object.keys(headers)
     .filter(key => key.startsWith(prefix))
     .sort();
@@ -155,27 +100,44 @@ export const getCanonicalHeaders: GetCanonicalHeaders = ({prefix}, headers) => {
   };
 };
 
-export const initGetRequestHeaders: InitGetRequestHeaders =
-  gatewayOptions =>
-  ({host, headers, data, url, method = 'GET'}) => {
-    const requestHeaders = initGetHeaders(gatewayOptions)({
-      headers,
-      data,
-      host,
-    });
+/**
+ * Handle the request headers information.
+ *
+ * @param options Handle request headers options.
+ * @param gatewayOptions API gateway options.
+ */
+const handleRequestHeaders = (
+  {host, headers, data, url, method = 'GET'}: HandleRequestHeadersOptions,
+  gatewayOptions: GatewayOptions
+) => {
+  const headersFun = initHandleHeaders(gatewayOptions);
+  const requestHeaders = headersFun({
+    headers,
+    data,
+    host,
+  });
 
-    const {canonicalHeadersKeysString, sign} = getToken({
-      url,
-      secret: gatewayOptions.appSecret,
-      method: method.toLocaleUpperCase() as HttpMethod,
-      headers: requestHeaders,
-    });
+  const {canonicalHeadersKeysString, sign} = handleToken({
+    url,
+    secret: gatewayOptions.appSecret,
+    method: method.toLocaleUpperCase() as HttpMethod,
+    headers: requestHeaders,
+  });
 
-    return {
-      ...requestHeaders,
-      'x-ca-signature': sign,
-      'x-ca-signature-headers': canonicalHeadersKeysString,
-    };
+  return {
+    ...requestHeaders,
+    'x-ca-signature': sign,
+    'x-ca-signature-headers': canonicalHeadersKeysString,
   };
+};
+
+/**
+ * Initialize the function that handle the request headers.
+ *
+ * @param gatewayOptions API gateway options.
+ */
+export const initHandleRequestHeaders =
+  (gatewayOptions: GatewayOptions) => (options: HandleRequestHeadersOptions) =>
+    handleRequestHeaders(options, gatewayOptions);
 
 export {HEADERS as headers};

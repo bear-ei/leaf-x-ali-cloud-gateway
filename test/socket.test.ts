@@ -1,13 +1,19 @@
 import * as assert from 'assert';
 import {Server} from 'mock-socket';
-import {initSocket, SocketResult} from '../src/socket';
+import {Event, initSocket, SendSocketOptions} from '../src/socket';
 
 let MOCK_SERVER!: Server;
-let SOCKET!: SocketResult;
+let SOCKET!: {
+  connect: () => void;
+  close: () => void;
+  on: (event: Event, fun: Function) => void;
+  send: (event: string, options?: SendSocketOptions) => void;
+};
 
 describe('test/socket.test.ts', () => {
   before(() => {
     let heartNumber = 0;
+
     MOCK_SERVER = new Server('ws://localhost:8080');
     MOCK_SERVER.on('connection', io => {
       io.on('message', data => {

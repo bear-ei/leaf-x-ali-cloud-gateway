@@ -1,6 +1,6 @@
 import fetch, {FetchOptions, handleRequestUrl} from '@leaf-x/fetch';
 import {GatewayOptions} from './gateway';
-import {headers as globalHeaders, initHandleRequestHeaders} from './headers';
+import {initHandleRequestHeaders} from './headers';
 
 /**
  * HTTP request method.
@@ -18,51 +18,36 @@ export type HttpMethod =
   | 'UNLINK';
 
 /**
- * API gateway request options.
+ * Request options.
  */
 export interface RequestOptions extends FetchOptions {
   /**
-   *  Request API gateway host address.
+   * Request host address.
    */
   host?: string;
 }
 
 /**
- * Request.
+ * Initiate a network request.
  *
  * @param url Request URL.
- * @param gatewayOptions API gateway options.
- * @param [options={}] API gateway request options.
+ * @param initRequestOptions API gateway options.
+ * @param [options={}] Request options.
  */
 const request = (
   url: string,
   gatewayOptions: GatewayOptions,
   options: RequestOptions = {}
 ) => {
-  const {
-    method = 'GET',
-    body,
-    data,
-    headers,
-    params = {},
-    host,
-    ...args
-  } = options;
-
+  const {method = 'GET', body, data, headers, params, host, ...args} = options;
+  const handleRequestHeaders = initHandleRequestHeaders(gatewayOptions);
   const requestBody = data ?? body;
   const requestUrl = handleRequestUrl(url, {params});
-  const addHeaders = {} as Record<string, string>;
-
-  for (const key of globalHeaders.keys()) {
-    Object.assign(addHeaders, {[key]: globalHeaders.get(key)});
-  }
-
-  const handleRequestHeaders = initHandleRequestHeaders(gatewayOptions);
   const requestHeaders = handleRequestHeaders({
     url: requestUrl,
     method,
     data: requestBody,
-    headers: {...addHeaders, ...headers},
+    headers,
     params,
     host,
   });
@@ -77,7 +62,7 @@ const request = (
 };
 
 /**
- * Initialize the request function.
+ * Initialization request.
  *
  * @param gatewayOptions API gateway options.
  */

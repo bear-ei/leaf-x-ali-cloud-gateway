@@ -1,9 +1,10 @@
 import * as crypto from 'crypto';
+import {GatewayOptions} from './gateway';
 import {handleCanonicalHeaders} from './headers';
 import {HttpMethod} from './request';
 
 /**
- * Signature options.
+ *  Signature options.
  */
 export interface SignOptions {
   /**
@@ -12,9 +13,9 @@ export interface SignOptions {
   signString: string;
 
   /**
-   * API gateway access key.
+   * API gateway authorization application secret key.
    */
-  secret: string;
+  secret: GatewayOptions['appSecret'];
 }
 
 /**
@@ -32,19 +33,19 @@ export interface HandleSignStringOptions {
   url: string;
 
   /**
-   * Request headers information.
+   * Request header information.
    */
   headers: Record<string, string>;
 }
 
 /**
- * Handle the request token options.
+ * Handle token options.
  */
 export interface HandleTokenOptionsOptions {
   /**
-   * API gateway access key.
+   * API gateway authorization application secret key.
    */
-  secret: string;
+  secret: GatewayOptions['appSecret'];
 
   /**
    * HTTP request method.
@@ -57,13 +58,13 @@ export interface HandleTokenOptionsOptions {
   url: string;
 
   /**
-   * Request headers information.
+   * Request header information.
    */
   headers: Record<string, string>;
 }
 
 /**
- * Signature.
+ * Generate a request signature.
  *
  * @param options Signature options.
  */
@@ -111,9 +112,9 @@ const handleSignString = ({method, url, headers}: HandleSignStringOptions) => {
 };
 
 /**
- * Handle the request token.
+ * Handle token.
  *
- * @param options Handle the request token options.
+ * @param options Handle token options.
  */
 export const handleToken = ({secret, ...args}: HandleTokenOptionsOptions) => {
   const {canonicalHeadersKeysString, signString} = handleSignString(args);

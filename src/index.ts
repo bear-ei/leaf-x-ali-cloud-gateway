@@ -1,3 +1,4 @@
+export * from './defaults';
 export * from './gateway';
 export * from './headers';
 export * from './request';

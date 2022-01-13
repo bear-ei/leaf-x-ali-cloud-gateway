@@ -2,14 +2,16 @@ import * as assert from 'assert';
 import {handleCanonicalHeaders, initHandleRequestHeaders} from '../src/headers';
 
 describe('test/headers.test.ts', () => {
-  it('should get the request headers', async () => {
-    const result = initHandleRequestHeaders({
+  it('should handle the request header', async () => {
+    const handleRequestHeader = initHandleRequestHeaders({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
       stage: 'RELEASE',
-    })({
-      url: 'https://leaf-x.app',
-      host: 'leaf-x.app',
+    });
+
+    const result = handleRequestHeader({
+      url: 'https://leaf-x.com',
+      host: 'leaf-x.com',
       data: {test: 'test'},
     });
 
@@ -24,13 +26,15 @@ describe('test/headers.test.ts', () => {
     assert(typeof result['date'] === 'string');
   });
 
-  it('should be a text data request headers', async () => {
-    const result = initHandleRequestHeaders({
+  it('should be handle text data request headers', async () => {
+    const handleRequestHeaders = initHandleRequestHeaders({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
       stage: 'RELEASE',
-    })({
-      url: 'https://leaf-x.app',
+    });
+
+    const result = handleRequestHeaders({
+      url: 'https://leaf-x.com',
       headers: {
         'content-type': 'application/json; charset=utf-8',
         accept: '*/*',
@@ -50,7 +54,7 @@ describe('test/headers.test.ts', () => {
     assert(typeof result['date'] === 'string');
   });
 
-  it('should be obtained from the canonical header', async () => {
+  it('should be handle the canonical request header', async () => {
     const result = handleCanonicalHeaders('x-ca-', {
       'x-ca-nonce': '3a9d60c9-1dfc-494c-ac56-6a995034c303',
       'x-ca-timestamp': '1620702566222',

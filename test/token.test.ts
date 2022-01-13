@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {handleToken} from './../src/token';
 
 describe('test/token.test.ts', () => {
-  it('should get the request token', async () => {
+  it('should handle the request token', async () => {
     const result = handleToken({
       secret: 'MTIz',
       method: 'GET',

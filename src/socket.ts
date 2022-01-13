@@ -2,7 +2,7 @@ import {FetchOptions, handleRequestUrl} from '@leaf-x/fetch';
 import {Base64} from 'js-base64';
 import * as uuid from 'uuid';
 import {GatewayOptions} from './gateway';
-import {headers as globalHeaders, initHandleRequestHeaders} from './headers';
+import {initHandleRequestHeaders} from './headers';
 
 /**
  * Socket command word enumeration.
@@ -50,7 +50,7 @@ export enum CommandWord {
   HF = 'hf',
 
   /**
-   * TThe API gateway sends a downlink notification request.
+   * The API gateway sends a downlink notification request.
    */
   NF = 'nf',
 }
@@ -61,7 +61,7 @@ export enum CommandWord {
 export type CommandWordString = 'RF' | 'OS' | 'CR' | 'RO' | 'HO' | 'HF' | 'NF';
 
 /**
- * Response event enumeration.
+ * Socket response event enumeration.
  */
 export enum ResponseEvent {
   SIGN_UP = 'signUp',
@@ -69,12 +69,12 @@ export enum ResponseEvent {
 }
 
 /**
- * Response event string.
+ * Socket response event string.
  */
 export type ResponseEventString = 'SIGN_UP' | 'SIGN_OUT';
 
 /**
- * Listening to events.
+ * Socket event.
  */
 export type Event =
   | 'OPEN'
@@ -92,17 +92,17 @@ export type Event =
  */
 export interface SocketOptions {
   /**
-   * Sign up path.
+   * Socket sign up path.
    */
   signUpPath: string;
 
   /**
-   * Sign out path.
+   * Socket sign out path.
    */
   signOutPath: string;
 
   /**
-   * API gateway host address.
+   * Request host address.
    */
   host?: string;
 
@@ -112,22 +112,22 @@ export interface SocketOptions {
   protocol?: 'wss' | 'ws';
 
   /**
-   * API Gateway port.
+   * Socket port.
    */
   port?: number;
 
   /**
-   * Client device ID.
+   * Application device ID.
    */
   deviceId?: string;
 }
 
 /**
- * Socket request option.
+ * Socket request options.
  */
 export interface SocketRequestOptions extends FetchOptions {
   /**
-   * API gateway host address.
+   * Request host address.
    */
   host: string;
 
@@ -137,7 +137,7 @@ export interface SocketRequestOptions extends FetchOptions {
   seq: number;
 
   /**
-   * Request type. UNREGISTER is sign oul, REGISTER is sign up.
+   * Request Type.
    */
   type?: 'UNREGISTER' | 'REGISTER';
 
@@ -147,25 +147,28 @@ export interface SocketRequestOptions extends FetchOptions {
   protocol: 'ws' | 'wss';
 }
 
+/**
+ * Send socket message options.
+ */
 export interface SendSocketOptions {
   /**
-   * Send a message.
+   * Socket message.
    */
   message?: string | Record<string, unknown>;
 
   /**
-   * Request type. UNREGISTER is sign oul, REGISTER is sign up.
+   * Request Type.
    */
   type?: SocketRequestOptions['type'];
 
   /**
-   * Send message path.
+   * Message path.
    */
   path?: string;
 }
 
 /**
- * Socket.
+ * Socket API.
  *
  * @param options API gateway options.
  */
@@ -391,18 +394,18 @@ const socket = ({socketOptions, ...gatewayOptionsArgs}: GatewayOptions) => {
 };
 
 /**
- *  The function to initialize the socket.
+ * Initialize the socket.
  *
  * @param options API gateway options.
  */
-export const initSocket = (options: GatewayOptions) => () => socket(options);
+export const initSocket = (options: GatewayOptions) => socket(options);
 
 /**
  * Handle socket request messages.
  *
  * @param path Request path.
- * @param socketRequestOptions Socket request option.
- * @param options API gateway options.
+ * @param options Socket request options.
+ * @param gatewayOptions API gateway options.
  */
 const handleSocketRequestMessage = (
   path: string,
@@ -411,13 +414,8 @@ const handleSocketRequestMessage = (
 ) => {
   const url = `${protocol}://${host}${path}`;
   const requestUrl = handleRequestUrl(url, {params});
-  const addHeaders = {} as Record<string, string>;
   const body =
     typeof data === 'object' && data !== null ? JSON.stringify(data) : data;
-
-  for (const key of globalHeaders.keys()) {
-    Object.assign(addHeaders, {[key]: globalHeaders.get(key)});
-  }
 
   const handleRequestHeaders = initHandleRequestHeaders(options);
   const headers = handleRequestHeaders({
@@ -429,7 +427,6 @@ const handleSocketRequestMessage = (
       ca_version: '1',
       'x-ca-seq': `${seq}`,
       ...(type ? {'x-ca-websocket_api_type': type} : undefined),
-      ...addHeaders,
     },
   });
 
@@ -448,7 +445,7 @@ const handleSocketRequestMessage = (
 };
 
 /**
- * Initialize the function that handles socket request messages.
+ * Initialize the processing of socket request messages.
  *
  * @param gatewayOptions API gateway options.
  */

@@ -1,22 +1,23 @@
 import {FetchOptions} from '@leaf-x/fetch';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
+import {DEFAULTS as defaults} from './defaults';
 import {GatewayOptions} from './gateway';
 import {HttpMethod} from './request';
 import {handleToken} from './token';
 
 /**
- * Handle headers options.
+ * Handle header options.
  */
 export interface HandleHeadersOptions extends FetchOptions {
   /**
-   *  Request API gateway host address.
+   * Request host address.
    */
   host?: string;
 }
 
 /**
- * Handle request headers options.
+ * Handle request header options.
  */
 export interface HandleRequestHeadersOptions extends FetchOptions {
   /**
@@ -25,32 +26,28 @@ export interface HandleRequestHeadersOptions extends FetchOptions {
   url: string;
 
   /**
-   *  Request API gateway host address.
+   * Request host address.
    */
-  host?: string;
+  host?: HandleHeadersOptions['host'];
 }
 
 /**
- * Set the global request headers information.
- */
-const HEADERS = new Map();
-
-/**
- * Handle headers information.
+ * Handle header information.
  *
- * @param options Handle request headers options.
+ * @param options Handle header options.
  * @param gatewayOptions API gateway options.
  */
 const handleHeaders = (
   {headers, data, host}: HandleHeadersOptions,
   {appKey, stage, headers: defaultHeaders}: GatewayOptions
 ) => {
-  const relHeaders = headers as Record<string, string>;
-  const isJson = typeof data === 'object' && data !== null;
-  const relData = isJson ? JSON.stringify(data) : data?.toString();
+  const body =
+    typeof data === 'object' && data !== null
+      ? JSON.stringify(data)
+      : data?.toString();
 
-  const contentMD5 = relData
-    ? crypto.createHash('md5').update(relData).digest('base64')
+  const contentMD5 = body
+    ? crypto.createHash('md5').update(body).digest('base64')
     : '';
 
   return {
@@ -59,18 +56,19 @@ const handleHeaders = (
     'x-ca-key': appKey,
     'x-ca-stage': stage as string,
     'content-type':
-      relHeaders?.['content-type'] ?? 'application/json; charset=utf-8',
+      headers?.['content-type'] ?? 'application/json; charset=utf-8',
     'content-md5': contentMD5,
-    accept: relHeaders?.accept ?? '*/*',
+    accept: headers?.accept ?? '*/*',
     date: '',
     ...(host ? {host} : undefined),
     ...defaultHeaders,
-    ...relHeaders,
+    ...defaults.get('headers'),
+    ...headers,
   };
 };
 
 /**
- * Initialize the function that handle the headers.
+ * Initialize the handle request headers.
  *
  * @param gatewayOptions API gateway options.
  */
@@ -79,10 +77,10 @@ const initHandleHeaders =
     handleHeaders(options, gatewayOptions);
 
 /**
- * Handle canonical request headers.
+ * Handles the canonical request header information.
  *
- * @param prefix Canonical request headers prefix.
- * @param headers Request headers information.
+ * @param prefix Canonical request header prefix.
+ * @param headers Request header information.
  */
 export const handleCanonicalHeaders = (
   prefix: string,
@@ -101,9 +99,9 @@ export const handleCanonicalHeaders = (
 };
 
 /**
- * Handle the request headers information.
+ * Handle the request header information.
  *
- * @param options Handle request headers options.
+ * @param options Handle request header options.
  * @param gatewayOptions API gateway options.
  */
 const handleRequestHeaders = (
@@ -132,12 +130,10 @@ const handleRequestHeaders = (
 };
 
 /**
- * Initialize the function that handle the request headers.
+ * Initialize the handle request header information.
  *
  * @param gatewayOptions API gateway options.
  */
 export const initHandleRequestHeaders =
   (gatewayOptions: GatewayOptions) => (options: HandleRequestHeadersOptions) =>
     handleRequestHeaders(options, gatewayOptions);
-
-export {HEADERS as headers};

@@ -318,11 +318,9 @@ const socket = ({socketOptions, ...gatewayOptionsArgs}: GatewayOptions) => {
   };
 
   const close = () => {
-    if (webSocket.readyState === webSocket.OPEN) {
-      online
-        ? send('MESSAGE', {path: signOutPath, type: 'UNREGISTER'})
-        : webSocket.close(1000);
-    }
+    webSocket.readyState === webSocket.OPEN && online
+      ? send('MESSAGE', {path: signOutPath, type: 'UNREGISTER'})
+      : webSocket.close(1000);
 
     reset();
   };

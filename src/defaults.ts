@@ -5,7 +5,7 @@ import {FetchOptions} from '@leaf-x/fetch';
  */
 export interface HandleDefaultsOptions {
   /**
-   * Request header information.
+   * Request headers information.
    */
   headers?: FetchOptions['headers'];
 }

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {handleCanonicalHeaders, initHandleRequestHeaders} from '../src/headers';
 
 describe('test/headers.test.ts', () => {
-  it('should handle the request header', async () => {
+  it('should handle the request headers', async () => {
     const handleRequestHeader = initHandleRequestHeaders({
       appKey: '1234455',
       appSecret: 'MTIzNDQ1NQ==',
@@ -54,7 +54,7 @@ describe('test/headers.test.ts', () => {
     assert(typeof result['date'] === 'string');
   });
 
-  it('should be handle the canonical request header', async () => {
+  it('should be handle the canonical request headers', async () => {
     const result = handleCanonicalHeaders('x-ca-', {
       'x-ca-nonce': '3a9d60c9-1dfc-494c-ac56-6a995034c303',
       'x-ca-timestamp': '1620702566222',

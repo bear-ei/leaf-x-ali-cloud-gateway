@@ -2,8 +2,8 @@
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
     "rootDir": ".",
-    "lib": ["DOM", "DOM.Iterable"],
-    "outDir": "dist"
+    "outDir": "dist",
+    "lib": ["DOM", "DOM.Iterable"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts"]
 }

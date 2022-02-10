@@ -7,7 +7,7 @@ import {HttpMethod} from './request';
 import {handleToken} from './token';
 
 /**
- * Handle header options.
+ * Handle headers options.
  */
 export interface HandleHeadersOptions extends FetchOptions {
   /**
@@ -17,7 +17,7 @@ export interface HandleHeadersOptions extends FetchOptions {
 }
 
 /**
- * Handle request header options.
+ * Handle request headers options.
  */
 export interface HandleRequestHeadersOptions extends FetchOptions {
   /**
@@ -32,9 +32,9 @@ export interface HandleRequestHeadersOptions extends FetchOptions {
 }
 
 /**
- * Handle header information.
+ * Handle headers information.
  *
- * @param options Handle header options.
+ * @param options Handle headers options.
  * @param gatewayOptions API gateway options.
  */
 const handleHeaders = (
@@ -77,10 +77,10 @@ const initHandleHeaders =
     handleHeaders(options, gatewayOptions);
 
 /**
- * Handles the canonical request header information.
+ * Handles the canonical request headers information.
  *
- * @param prefix Canonical request header prefix.
- * @param headers Request header information.
+ * @param prefix Canonical request headers prefix.
+ * @param headers Request headers information.
  */
 export const handleCanonicalHeaders = (
   prefix: string,
@@ -99,9 +99,9 @@ export const handleCanonicalHeaders = (
 };
 
 /**
- * Handle the request header information.
+ * Handle the request headers information.
  *
- * @param options Handle request header options.
+ * @param options Handle request headers options.
  * @param gatewayOptions API gateway options.
  */
 const handleRequestHeaders = (
@@ -130,7 +130,7 @@ const handleRequestHeaders = (
 };
 
 /**
- * Initialize the handle request header information.
+ * Initialize the handle request headers information.
  *
  * @param gatewayOptions API gateway options.
  */

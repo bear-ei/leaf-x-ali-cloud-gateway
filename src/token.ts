@@ -33,7 +33,7 @@ export interface HandleSignStringOptions {
   url: string;
 
   /**
-   * Request header information.
+   * Request headers information.
    */
   headers: Record<string, string>;
 }
@@ -58,7 +58,7 @@ export interface HandleTokenOptionsOptions {
   url: string;
 
   /**
-   * Request header information.
+   * Request headers information.
    */
   headers: Record<string, string>;
 }

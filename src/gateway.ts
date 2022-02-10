@@ -23,7 +23,7 @@ export interface GatewayOptions {
   stage?: 'RELEASE' | 'PRE' | 'TEST';
 
   /**
-   * Request header information.
+   * Request headers information.
    *
    * The default 'content-type' is 'application/json; charset=utf-8'.
    */

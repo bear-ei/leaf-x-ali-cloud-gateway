@@ -5,9 +5,9 @@ import {GatewayOptions} from './gateway';
 import {initHandleRequestHeaders} from './headers';
 
 /**
- * Socket command word enumeration.
+ * Socket command word type.
  */
-export enum CommandWord {
+export enum CommandWordType {
   /**
    * The API gateway returns a registration failure response.
    */
@@ -56,22 +56,29 @@ export enum CommandWord {
 }
 
 /**
- * Socket command word string.
+ * Socket command word type string.
  */
-export type CommandWordString = 'RF' | 'OS' | 'CR' | 'RO' | 'HO' | 'HF' | 'NF';
+export type CommandWordTypeString =
+  | 'RF'
+  | 'OS'
+  | 'CR'
+  | 'RO'
+  | 'HO'
+  | 'HF'
+  | 'NF';
 
 /**
- * Socket response event enumeration.
+ * Socket response event type.
  */
-export enum ResponseEvent {
+export enum ResponseEventType {
   SIGN_UP = 'signUp',
   SIGN_OUT = 'signOut',
 }
 
 /**
- * Socket response event string.
+ * Socket response event type string.
  */
-export type ResponseEventString = 'SIGN_UP' | 'SIGN_OUT';
+export type ResponseEventTypeString = 'SIGN_UP' | 'SIGN_OUT';
 
 /**
  * Socket event.
@@ -247,7 +254,8 @@ const socket = ({socketOptions, ...gatewayOptionsArgs}: GatewayOptions) => {
 
     if (isObject) {
       const {status, body, header} = data as Record<string, unknown>;
-      const handleEvent = event[ResponseEvent[body as ResponseEventString]];
+      const handleEvent =
+        event[ResponseEventType[body as ResponseEventTypeString]];
 
       status === 200 && handleEvent
         ? handleEvent((header as Record<string, string>)['x-ca-seq'])
@@ -377,8 +385,8 @@ const socket = ({socketOptions, ...gatewayOptionsArgs}: GatewayOptions) => {
       });
 
       const data = messageEvent.data;
-      const signal = data?.slice(0, 2) as CommandWordString;
-      const handEvent = event[CommandWord[signal]];
+      const signal = data?.slice(0, 2) as CommandWordTypeString;
+      const handEvent = event[CommandWordType[signal]];
 
       handEvent ? handEvent(data) : handleMessage(data);
     };
@@ -438,7 +446,7 @@ const handleSocketRequestMessage = (
       .map(key => ({
         [key]: [headers[key as keyof typeof headers]],
       }))
-      .reduce((a, b) => Object.assign(a, b), {}),
+      .reduce((a, b) => ({...a, ...b}), {}),
   });
 };
 

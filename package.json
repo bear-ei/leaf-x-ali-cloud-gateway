@@ -1,6 +1,6 @@
 {
   "name": "@leaf-x/ali-cloud-gateway",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "main": "./dist/src/index.js",
   "author": "sound shell <sound_shell@outlook.com>",
   "description": "Ali cloud gateway.",

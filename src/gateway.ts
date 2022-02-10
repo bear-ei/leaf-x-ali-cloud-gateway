@@ -81,7 +81,7 @@ const relGateway = ({
 };
 
 /**
- * Defines the request default parameter settings.
+ * Defines the request default params settings.
  */
 Object.defineProperty(relGateway, 'defaults', {
   value: handleDefaults,

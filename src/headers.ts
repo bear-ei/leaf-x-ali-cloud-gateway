@@ -14,21 +14,21 @@ export interface HandleHeadersOptions extends FetchOptions {
    * Request host address.
    */
   host?: string;
+
+  /**
+   * Request headers information.
+   */
+  headers?: GatewayOptions['headers'];
 }
 
 /**
  * Handle request headers options.
  */
-export interface HandleRequestHeadersOptions extends FetchOptions {
+export interface HandleRequestHeadersOptions extends HandleHeadersOptions {
   /**
    * Request URL.
    */
   url: string;
-
-  /**
-   * Request host address.
-   */
-  host?: HandleHeadersOptions['host'];
 }
 
 /**
@@ -62,7 +62,7 @@ const handleHeaders = (
     date: '',
     ...(host ? {host} : undefined),
     ...defaultHeaders,
-    ...defaults.get('headers'),
+    ...(defaults.get('headers') as GatewayOptions['headers']),
     ...headers,
   };
 };

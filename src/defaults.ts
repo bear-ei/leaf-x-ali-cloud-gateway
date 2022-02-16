@@ -1,4 +1,4 @@
-import {FetchOptions} from '@leaf-x/fetch';
+import {GatewayOptions} from './gateway';
 
 /**
  * Handle default options.
@@ -7,7 +7,7 @@ export interface HandleDefaultsOptions {
   /**
    * Request headers information.
    */
-  headers?: FetchOptions['headers'];
+  headers?: GatewayOptions['headers'];
 }
 
 /**

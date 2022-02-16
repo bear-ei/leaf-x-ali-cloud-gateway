@@ -25,6 +25,11 @@ export interface RequestOptions extends FetchOptions {
    * Request host address.
    */
   host?: string;
+
+  /**
+   * Request headers information.
+   */
+  headers?: GatewayOptions['headers'];
 }
 
 /**

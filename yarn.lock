@@ -262,10 +262,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@leaf-x/fetch@^2.5.5":
-  version "2.5.5"
-  resolved "https://registry.yarnpkg.com/@leaf-x/fetch/-/fetch-2.5.5.tgz#1ce0fb4262f116e7c97e0593e4ae8237d96f6da3"
-  integrity sha512-0FSKZVZn2/kVpn/zIr4hDbg1/4cVNGBHj0iWm6KV/lpufGI8sRcJ8BQDo+ydluDPvsnA4uTSIRgcyurpy6VOHQ==
+"@leaf-x/fetch@^2.5.10":
+  version "2.5.10"
+  resolved "https://registry.yarnpkg.com/@leaf-x/fetch/-/fetch-2.5.10.tgz#56d85b08af92b5aa96cc9595029b192e74b1e27e"
+  integrity sha512-+o/c6LqPt00S2iCBxhPhpb+4nvbRdd+MxjM/GnAEd4aQWu/rhQ++gl7iA6z334cfGIJGU8L8DouQaZsEATyEIQ==
   dependencies:
     abort-controller "^3.0.0"
     isomorphic-fetch "^3.0.0"

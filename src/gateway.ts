@@ -1,4 +1,4 @@
-import fetch, {FetchOptions} from '@leaf-x/fetch';
+import fetch from '@leaf-x/fetch';
 import {handleDefaults} from './defaults';
 import {initRequest} from './request';
 import {initSocket, SocketOptions} from './socket';
@@ -27,7 +27,7 @@ export interface GatewayOptions {
    *
    * The default 'content-type' is 'application/json; charset=utf-8'.
    */
-  headers?: FetchOptions['headers'];
+  headers?: Record<string, string>;
 
   /**
    * Request timeout time.

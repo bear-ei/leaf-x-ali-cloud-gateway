@@ -1,6 +1,6 @@
 {
   "name": "@leaf-x/ali-cloud-gateway",
-  "version": "2.1.5",
+  "version": "2.1.8",
   "main": "./dist/src/index.js",
   "author": "sound shell <sound_shell@outlook.com>",
   "description": "Ali cloud gateway.",
@@ -14,7 +14,7 @@
     "url": "https://github.com/SoundShell/ali-cloud-gateway/issues"
   },
   "dependencies": {
-    "@leaf-x/fetch": "^2.5.5",
+    "@leaf-x/fetch": "^2.5.10",
     "js-base64": "^3.7.2",
     "uuid": "^8.3.2"
   },
@@ -60,9 +60,9 @@
     "clean": "gts clean",
     "compile": "tsc",
     "fix": "gts fix",
-    "prepare": "yarn run compile",
-    "pretest": "yarn run compile",
-    "posttest": "yarn run lint"
+    "prepare": "yarn compile",
+    "pretest": "yarn compile",
+    "posttest": "yarn lint"
   },
   "engines": {
     "node": ">=11.0.0"

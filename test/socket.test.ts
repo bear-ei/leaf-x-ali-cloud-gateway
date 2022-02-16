@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import {Server} from 'mock-socket';
+import {Client, Server} from 'mock-socket';
 import {Event, initSocket, SendSocketOptions} from '../src/socket';
 
 type Json = Record<
@@ -17,7 +17,7 @@ let SOCKET!: {
 
 let heartNumber = 0;
 
-const send = (io: WebSocket, data: string) => {
+const send = (io: Client, data: string) => {
   if (data.startsWith('H1')) {
     if (heartNumber === 0) {
       io.send('HO#The heartbeat is maintained successfully.');

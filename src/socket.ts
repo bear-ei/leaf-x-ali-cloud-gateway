@@ -218,7 +218,7 @@ const socket = ({socketOptions, ...gatewayOptionsArgs}: GatewayOptions) => {
       data = message;
     }
 
-    const event = Object.freeze({
+    const event = {
       signUp: (sequence: string) => {
         if (webSocket.readyState === webSocket.OPEN) {
           heartTimer = setInterval(() => {
@@ -248,7 +248,7 @@ const socket = ({socketOptions, ...gatewayOptionsArgs}: GatewayOptions) => {
           `The gateway with sequence ${sequence} is signed out successfully.`
         );
       },
-    });
+    };
 
     const isObject = typeof data === 'object' && data !== null;
 
@@ -361,7 +361,7 @@ const socket = ({socketOptions, ...gatewayOptionsArgs}: GatewayOptions) => {
     };
 
     webSocket.onmessage = messageEvent => {
-      const event = Object.freeze({
+      const event = {
         rf: reconnect,
         os: reconnect,
         cr: reconnect,
@@ -382,7 +382,7 @@ const socket = ({socketOptions, ...gatewayOptionsArgs}: GatewayOptions) => {
           send('NO');
           emit('MESSAGE', message.slice(3));
         },
-      });
+      };
 
       const data = messageEvent.data;
       const signal = data?.slice(0, 2) as CommandWordTypeString;

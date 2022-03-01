@@ -39,7 +39,7 @@ export interface HandleRequestHeadersOptions extends HandleHeadersOptions {
  */
 const handleHeaders = (
   {headers, data, host}: HandleHeadersOptions,
-  {appKey, stage, headers: defaultHeaders}: GatewayOptions
+  {appKey, stage = 'RELEASE', headers: defaultHeaders}: GatewayOptions
 ) => {
   const body =
     typeof data === 'object' && data !== null
@@ -54,7 +54,7 @@ const handleHeaders = (
     'x-ca-nonce': uuid.v4(),
     'x-ca-timestamp': `${Date.now()}`,
     'x-ca-key': appKey,
-    'x-ca-stage': stage as string,
+    'x-ca-stage': stage,
     'content-type':
       headers?.['content-type'] ?? 'application/json; charset=utf-8',
     'content-md5': contentMD5,
@@ -62,7 +62,7 @@ const handleHeaders = (
     date: '',
     ...(host ? {host} : undefined),
     ...defaultHeaders,
-    ...(defaults.get('headers') as GatewayOptions['headers']),
+    ...defaults.get('headers'),
     ...headers,
   };
 };

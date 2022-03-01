@@ -155,6 +155,26 @@ export interface SocketRequestOptions extends FetchOptions {
 }
 
 /**
+ * Socket request result.
+ */
+export interface SocketRequestResult {
+  /**
+   * Response status code.
+   */
+  status: number;
+
+  /**
+   * Socket response event type string.
+   */
+  body: ResponseEventTypeString;
+
+  /**
+   * Response header.
+   */
+  header: Record<string, string>;
+}
+
+/**
  * Send socket message options.
  */
 export interface SendSocketOptions {
@@ -253,12 +273,11 @@ const socket = ({socketOptions, ...gatewayOptionsArgs}: GatewayOptions) => {
     const isObject = typeof data === 'object' && data !== null;
 
     if (isObject) {
-      const {status, body, header} = data as Record<string, unknown>;
-      const handleEvent =
-        event[ResponseEventType[body as ResponseEventTypeString]];
+      const {status, body, header} = data as SocketRequestResult;
+      const handleEvent = event[ResponseEventType[body]];
 
       status === 200 && handleEvent
-        ? handleEvent((header as Record<string, string>)['x-ca-seq'])
+        ? handleEvent(header['x-ca-seq'])
         : emit('ERROR', data);
     } else {
       emit('MESSAGE', data);
@@ -444,7 +463,7 @@ const handleSocketRequestMessage = (
     path,
     headers: Object.keys(headers)
       .map(key => ({
-        [key]: [headers[key as keyof typeof headers]],
+        [key]: [headers[key]],
       }))
       .reduce((a, b) => ({...a, ...b}), {}),
   });

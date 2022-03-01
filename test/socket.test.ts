@@ -149,10 +149,9 @@ describe('test/socket.test.ts', () => {
     try {
       SOCKET.send('MESSAGE');
     } catch (error) {
-      assert(
-        (error as Record<string, unknown>).message ===
-          'Missing send event path.'
-      );
+      const relError = error as Record<string, unknown>;
+
+      assert(relError.message === 'Missing send event path.');
     }
 
     setTimeout(() => {
